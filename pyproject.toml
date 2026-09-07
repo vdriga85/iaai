@@ -16,7 +16,10 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
 ]
-dependencies = []
+dependencies = ["Flask>=3.1,<4", "pydantic>=2.10,<3"]
+
+[project.scripts]
+iaai = "iaai.cli:main"
 
 [project.optional-dependencies]
 dev = [

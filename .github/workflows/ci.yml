@@ -30,3 +30,10 @@ jobs:
 
       - name: Test
         run: pytest
+
+      - name: Build and check installed wheel
+        run: |
+          python -m pip wheel . --no-deps --wheel-dir dist
+          python -m pip install --force-reinstall --no-deps dist/iaai-*.whl
+          iaai --db runtime/ci.db doctor
+          python -c "from iaai.bootstrap import build_service; from iaai.web import create_app; assert create_app(build_service()).test_client().get('/').status_code == 200"

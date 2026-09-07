@@ -11,10 +11,43 @@ and replaceable model and provider integrations. IAAI will not reduce a complex 
 "magic" startup score. The initial MVP is intended to remain usable locally with no required
 paid APIs, hosted services, or cloud infrastructure.
 
-This repository currently contains only the project foundation. The research engine, model
-integrations, search, evidence analysis, reports, and user interface have not yet been
-implemented. Architecture will be defined in a separate review before those components are
-built.
+Phase 1 / Step 1 is executable: create and inspect research sessions through a local browser
+UI or CLI, with immutable protocol/policy snapshots, revision history and runtime manifests
+persisted in SQLite. **No research analysis is performed.** Acquisition, models, evidence,
+reports and recursion remain unimplemented.
+
+Architecture v0.1 is **ACCEPTED FOR EXPERIMENTAL IMPLEMENTATION**. This does not validate
+the methodology: Phase 1 is a human-assisted experiment, calibration defaults remain
+**UNVALIDATED**, and recursion must demonstrate benefit in a controlled A/B experiment.
+Concrete future ML models remain replaceable implementations.
+
+## Run locally
+
+After installing (see below), from the repository directory:
+
+```text
+iaai doctor
+iaai serve
+```
+
+Open http://127.0.0.1:8765 → **Новое исследование** → fill idea, scope and plain-language questions →
+**Создать исследование**. Constraints are optional. Details show the policy, hashes, revision
+and manifest. Stop with Ctrl+C; run `iaai serve` again and the same session remains.
+The default database is `./runtime/iaai.db`, ignored by Git. Keep the same working directory
+or use an explicit `--db` path. Never delete the runtime directory to upgrade the application.
+
+Windows without activation: `.\.venv\Scripts\iaai.exe serve`.
+
+```text
+iaai research create --protocol examples/protocol.json
+iaai research list
+iaai research show RESEARCH_ID
+iaai research show RESEARCH_ID --revision 1
+iaai manifest show RUN_ID
+iaai --db runtime/another.db doctor
+```
+
+See [Step 1 guide](docs/phase1-foundation.md) for schemas, revisions, limitations and storage.
 
 ## Development setup
 

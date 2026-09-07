@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Диагностика{% endblock %}
+{% block content %}
+<h2>Диагностика системы</h2>
+<p>Проверка текущего окружения и базы данных. Это не проверка качества идеи или методологии.</p>
+{% set db = result.database %}
+<section><h3>База данных: {{ 'OK' if result.ok else 'Ошибка' }}</h3>
+{% if not result.ok %}<p class="error">База данных недоступна или не прошла проверку. Проверьте путь, права доступа и совместимость файла базы. Техническая причина приведена ниже; существующие данные не удаляйте.</p>{% endif %}
+<dl><dt>Режим SQLite WAL</dt><dd>{{ 'OK' if db.get('journal_mode') == 'wal' else 'Недоступно' }}</dd>
+<dt>Надёжная запись FULL</dt><dd>{{ 'OK' if db.get('synchronous') == 2 else 'Недоступно' }}</dd>
+<dt>Связность записей — Foreign Keys</dt><dd>{{ 'OK' if db.get('foreign_keys') == 1 else 'Недоступно' }}</dd>
+<dt>Версия схемы</dt><dd>{{ db.get('user_version','Недоступно') }}</dd>
+<dt>Целостность базы</dt><dd>{{ 'OK' if db.get('integrity') == 'ok' else 'Недоступно' }}</dd>
+<dt>Файл базы данных</dt><dd>{{ db.get('path','Недоступно') }}</dd>
+</dl><p class="hint">WAL позволяет читать данные во время записи; FULL повышает надёжность сохранения; Foreign Keys контролируют связи между записями. Значения проверяются на реальном подключении.</p></section>
+<section><dl><dt>Рабочая папка</dt><dd>{{ result.runtime_directory }}</dd>
+<dt>Свободное место</dt><dd>{{ result.free_disk_bytes|byte_size }}</dd>
+<dt>Git commit</dt><dd>{{ result.runtime.git_commit or 'Недоступно' }}</dd>
+<dt>Состояние репозитория</dt><dd>{{ result.runtime.git_dirty|repository_state }}</dd>
+<dt>Python</dt><dd>{{ result.runtime.python_version }}</dd>
+<dt>Политика по умолчанию</dt><dd>{{ policy_statuses[result.policy_status] }} — {{ result.policy_status }}</dd></dl>
+<details><summary>Технические детали / исходный JSON</summary><pre>{{ result|tojson(indent=2) }}</pre></details></section>
+{% endblock %}

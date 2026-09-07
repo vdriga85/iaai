@@ -65,6 +65,7 @@ models/
 *.pdf
 *.html
 *.htm
+!src/iaai/templates/*.html
 
 # Editors and operating systems
 .vscode/

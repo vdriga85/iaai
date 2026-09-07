@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1",
+  "protocol_id": "dual-screen-au",
+  "version": 1,
+  "original_idea": "Dual-screen laptop for the Australian market",
+  "neutral_description": "Record the scope for a later investigation of dual-screen laptops.",
+  "product_scope": "Portable dual-screen laptop configuration",
+  "geography": "Australia",
+  "target_population": "Adult laptop users",
+  "time_horizon": null,
+  "source_cutoff": null,
+  "languages": ["en"],
+  "key_outputs": [
+    {"name": "prototype_cost", "description": "Prototype cost", "value_type": "number", "unit": "EUR"},
+    {"name": "alternatives", "description": "Alternative configurations", "value_type": "text", "unit": "text"}
+  ],
+  "assumptions": [],
+  "constraints": [],
+  "playbook_reference": null,
+  "playbook_version": null
+}

@@ -1,0 +1,42 @@
+{
+  "schema_version": "0.1",
+  "policy_id": "phase1-foundation",
+  "version": 1,
+  "status": "UNVALIDATED",
+  "parent_policy_hash": null,
+  "calibration_dataset_reference": null,
+  "scheduler": {
+    "schema_version": "0.1",
+    "mode": "SIMPLE",
+    "frontier_capacity": 40,
+    "children_per_proposal": 3,
+    "lane_shares": [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
+    "exploration_seed": 0
+  },
+  "stop": {
+    "schema_version": "0.1",
+    "informative_window_batches": 3,
+    "min_independent_exposure_origins": 5,
+    "novelty_ceiling": 0.05,
+    "output_rel_tolerance": null,
+    "freshness_interval_seconds": null
+  },
+  "resources": {
+    "schema_version": "0.1",
+    "run_disk_bytes": 2147483648,
+    "pool_disk_bytes": 21474836480,
+    "host_free_reserve_bytes": 32212254720,
+    "cpu_seconds": 7200,
+    "active_elapsed_seconds": 14400,
+    "wall_deadline_seconds": 86400,
+    "rss_bytes": 17179869184
+  },
+  "runtime": {"schema_version": "0.1", "sqlite_busy_timeout_seconds": 5},
+  "evaluation": {
+    "schema_version": "0.1",
+    "corpus_target_documents": 20,
+    "initial_questions_target": 6,
+    "repeat_seeds": [0, 1, 2],
+    "checkpoint_fractions": [0.25, 0.5, 0.75, 1.0]
+  }
+}

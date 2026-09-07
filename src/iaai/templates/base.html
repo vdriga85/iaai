@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>IAAI — {% block title %}Исследования{% endblock %}</title>
+<style>
+body{font:16px/1.5 system-ui,sans-serif;max-width:1050px;margin:32px auto;padding:0 20px;color:#24313a;background:#f6f7f8}
+nav{display:flex;gap:24px;margin:20px 0}a{color:#165f85}section,fieldset{background:white;padding:20px;margin:18px 0;border:1px solid #d4dce0;border-radius:5px}
+h1,h2,h3{line-height:1.2}label{display:block;margin:15px 0 5px}input,textarea,select{box-sizing:border-box;width:100%;padding:9px;font:inherit;border:1px solid #8b999f;border-radius:3px}
+textarea{min-height:90px}button,.button{display:inline-block;padding:10px 18px;background:#165f85;color:white;border:0;border-radius:3px;cursor:pointer}
+table{border-collapse:collapse;width:100%}td,th{padding:9px;text-align:left;border-bottom:1px solid #ddd;vertical-align:top}
+code,pre{overflow-wrap:anywhere;white-space:pre-wrap;font-size:13px}dt{font-weight:600;margin-top:10px}dd{margin-left:0;overflow-wrap:anywhere}
+.notice{background:#fff3cc;padding:12px}.error{background:#ffe7e7;padding:12px;overflow-wrap:anywhere}.muted{color:#56636b}small{font-size:13px}
+summary{cursor:pointer;margin:12px 0} .hint{color:#56636b;margin:5px 0 12px} details{margin:14px 0} input[type=date]{max-width:260px}
+</style></head><body>
+<header><h1>IAAI</h1><p>Исследование идей с помощью искусственного интеллекта</p>
+<nav><a href="{{ url_for('home') }}">Исследования</a><a href="{{ url_for('new_research') }}">Новое исследование</a><a href="{{ url_for('diagnostics') }}">Диагностика</a></nav></header>
+<p class="notice">Экспериментальный этап Phase 1 с участием человека. Пока программа только сохраняет настройки исследования — анализ рынка и ИИ-модели ещё не подключены.</p>
+{% block content %}{% endblock %}
+</body></html>

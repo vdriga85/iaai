@@ -2,7 +2,9 @@
 
 Статус: architecture **ACCEPTED FOR EXPERIMENTAL IMPLEMENTATION**;
 defaults **UNVALIDATED**. Дата: 2026-09-07.
-Это документация; config files и продуктовый код не создаются.
+Это архитектурный registry. Step 1 реализует его явно ограниченное подмножество;
+см. [executable foundation](../phase1-foundation.md). Остальные поля не поддерживаются
+текущей schema и не означают, что scheduler/model runtime уже реализованы.
 
 ## 1. Чистая model configuration
 
