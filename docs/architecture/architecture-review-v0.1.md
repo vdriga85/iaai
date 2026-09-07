@@ -5,6 +5,34 @@
 Продуктовый код не реализован. Этот аудит не подтверждает эффективность методологии:
 её ещё необходимо проверить экспериментом.
 
+## Round 2: уточнения после обсуждения
+
+Предварительно принятые принципы сохраняются; их актуальная формулировка находится
+в разделе Accepted candidate principles [proposal](architecture-v0.1-proposal.md).
+Первый раунд ниже остаётся журналом рисков, а не альтернативной спецификацией slice.
+Новые решения второго раунда:
+
+- KeyOutput, ConstraintEvaluation и EvidenceAssessment разделены. Methodological
+  threshold не может стать business boundary; manual review не разрешает скрытый score.
+- Общий commercial verdict исключён из Phase 1. Узкие comparisons с явно заданным
+  constraint допустимы, «слишком дорого» без основания — нет.
+- Все tunable defaults вынесены в [versioned policy registry](research-policy-v0.1.md).
+  Advanced weighted scheduler отложен; Phase 1 использует SIMPLE/FIFO/exploration.
+- Exploration имеет вход вне existing KeyOutputs; pair tests включают individually
+  insensitive factors. Это исправляет пробел первого materiality алгоритма.
+- Novelty теперь доля независимых observations с обновлением; старое updates/observation
+  могло быть больше 1. Frozen exhaustion не создаёт фиктивных пустых rounds.
+- Human semantic corrections допустимы только в явно human-assisted stratum;
+  ручная генерация ветвей и изменение stop/priority делают run exploratory.
+- Один кейс в Phase 1; три и более — Phase 2. Frozen corpus отделяет методологию
+  от качества поисковой инфраструктуры. Одна proposal model, без NLI/embeddings/NER.
+- A/B сравнивает пакет recursion+challenge с сильным static baseline; все resource
+  и reviewer расходы учитываются. Самостоятельный вклад recursion требует ablation.
+
+Точный план: [vertical-slice-v0.1.md](vertical-slice-v0.1.md).
+Фундаментального блокера для первого implementation нет; thresholds, полезность
+рекурсии и возможная автономность остаются экспериментальными. ADR не принимаются.
+
 ## 1. Архитектура, как она понята
 
 IAAI должна превращать идею с явными границами в проверяемый набор вопросов,

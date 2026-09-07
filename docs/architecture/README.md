@@ -4,6 +4,8 @@
 
 - [Critical architecture review (Russian)](architecture-review-v0.1.md)
 - [Architecture v0.1 proposal (Russian)](architecture-v0.1-proposal.md)
+- [First vertical slice and controlled experiment (Russian)](vertical-slice-v0.1.md)
+- [Versioned research policies and calibration registry (Russian)](research-policy-v0.1.md)
 
 These documents are proposals for discussion, not accepted decisions or implemented features.
 
