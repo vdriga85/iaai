@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block content %}
+<h2>Existing Researches</h2><a class="button" href="{{ url_for('new_research') }}">New Research</a>
+<section>{% if researches %}<table><thead><tr><th>ID / Idea</th><th>Status</th><th>Revision</th><th>Created</th><th></th></tr></thead><tbody>
+{% for item in researches %}<tr><td><small>{{ item.research_id }}</small><br>{{ item.original_idea }}</td><td>{{ item.status }}</td><td>{{ item.current_revision }}</td><td>{{ item.created_at.isoformat() }}</td><td><a href="{{ url_for('details', research_id=item.research_id) }}">Open</a></td></tr>{% endfor %}
+</tbody></table>{% else %}<p>No research sessions yet. Create one to save a protocol, policy and manifest.</p>{% endif %}</section>
+{% endblock %}

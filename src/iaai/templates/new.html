@@ -1,0 +1,20 @@
+{% extends 'base.html' %}{% block title %}New Research{% endblock %}{% block content %}
+<h2>New Research</h2>
+{% if error %}<div class="error" role="alert">{{ error.code }}: {{ error.message }}<br><small>Operation {{ error.operation_id }}</small></div>{% endif %}
+<form method="post"><input type="hidden" name="csrf" value="{{ session.csrf }}">
+<fieldset><legend>Idea and scope</legend>
+{% for key, label in [('original_idea','Original idea'),('neutral_description','Neutral scoped description'),('product_scope','Product / configuration'),('geography','Geography'),('target_population','Target segment / population'),('languages','Languages (comma separated)')] %}
+<label for="{{ key }}">{{ label }}</label>{% if key in ['original_idea','neutral_description'] %}<textarea id="{{ key }}" name="{{ key }}" required>{{ form.get(key,'') }}</textarea>{% else %}<input id="{{ key }}" name="{{ key }}" value="{{ form.get(key,'') }}" required>{% endif %}{% endfor %}
+{% for key, label in [('time_horizon','Time horizon (optional)'),('source_cutoff','Source cutoff (optional, YYYY-MM-DD)'),('playbook_reference','Playbook reference (optional)'),('playbook_version','Playbook version (required with reference)')] %}<label for="{{ key }}">{{ label }}</label><input id="{{ key }}" name="{{ key }}" value="{{ form.get(key,'') }}">{% endfor %}
+<label for="assumptions">Explicit assumptions (one per line, optional)</label><textarea id="assumptions" name="assumptions">{{ form.get('assumptions','') }}</textarea></fieldset>
+<fieldset><legend>Key Outputs</legend><p>One name per line creates a text output. Numeric output: <code>prototype_cost|number|EUR|Prototype cost</code>.</p>
+<label for="key_outputs">Output definitions</label><textarea id="key_outputs" name="key_outputs" required>{{ form.get('key_outputs','') }}</textarea>
+<p class="muted">Units: EUR, USD, AUD, GBP, bytes, seconds, hours, days, kg, g, mm, cm, m, W, Wh, percent, count, ratio, text. No automatic unit conversion.</p></fieldset>
+<fieldset><legend>Constraints — separate from outputs</legend>
+<p>No constraints is valid: leave <code>[]</code>. Each constraint records <strong>type, value, unit, origin</strong>, the output name and comparison operator.</p>
+<p>Types: USER, REGULATORY, PHYSICAL, TECHNICAL, METHODOLOGICAL_EVALUATION. Operators: eq, lt, le, gt, ge.</p>
+<label for="constraints">Explicit constraints (JSON array)</label><textarea id="constraints" name="constraints">{{ form.get('constraints','[]') }}</textarea>
+<details><summary>Example — only add if explicitly intended</summary><pre>[{"output":"prototype_cost","type":"USER","operator":"le","value":50000,"unit":"EUR","origin":"User-specified prototype budget"}]</pre></details></fieldset>
+<fieldset><legend>Research Policy</legend><p>Blank uses the packaged <strong>UNVALIDATED EXPERIMENTAL DEFAULTS</strong>. No analysis is started and budgets are not reserved.</p>
+<details><summary>Optional resolved policy JSON</summary><label for="policy">Policy (same schema as CLI)</label><textarea id="policy" name="policy">{{ form.get('policy','') }}</textarea></details></fieldset>
+<button type="submit">Create Research</button></form>{% endblock %}
