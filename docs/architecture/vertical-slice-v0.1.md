@@ -1,6 +1,8 @@
 # Vertical slice v0.1: конкретный первый эксперимент
 
-Статус: **implementation-ready candidate**, 2026-09-07; код ещё не пишется.
+Статус: **ACCEPTED FOR EXPERIMENTAL IMPLEMENTATION**, 2026-09-07.
+Phase 1 является human-assisted экспериментом. Польза recursion требует A/B проверки;
+calibration defaults UNVALIDATED, конкретные модели заменяемы.
 Главная гипотеза: recursive challenge-driven research находит больше существенных
 evidence/gaps/counterexamples при сопоставимых ресурсах, чем fixed playbook.
 Ссылки: [proposal](architecture-v0.1-proposal.md), [policies](research-policy-v0.1.md).

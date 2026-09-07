@@ -1,6 +1,7 @@
 # ResearchPolicy v0.1: architectural rules и calibration
 
-Статус: candidate schema, defaults **UNVALIDATED**. Дата: 2026-09-07.
+Статус: architecture **ACCEPTED FOR EXPERIMENTAL IMPLEMENTATION**;
+defaults **UNVALIDATED**. Дата: 2026-09-07.
 Это документация; config files и продуктовый код не создаются.
 
 ## 1. Чистая model configuration

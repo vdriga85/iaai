@@ -1,6 +1,9 @@
 # IAAI Architecture v0.1 — proposal, round 2
 
-Статус: **READY FOR VERTICAL-SLICE IMPLEMENTATION DISCUSSION / NOT FORMALLY ACCEPTED**.
+Статус: **Architecture v0.1 — ACCEPTED FOR EXPERIMENTAL IMPLEMENTATION**.
+Принято владельцем после второго раунда. Архитектура принята; recursive methodology
+остаётся experimental и требует A/B проверки. Calibration defaults — UNVALIDATED.
+Phase 1 — human-assisted methodology experiment; concrete ML models заменяемы.
 Дата: 2026-09-07. Только архитектурная документация; реализация и ADR не начаты.
 Этот раунд заменяет предыдущие рекомендации о первом slice и калибровке.
 Связанные документы: [аудит](architecture-review-v0.1.md),
