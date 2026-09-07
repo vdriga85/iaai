@@ -1,0 +1,79 @@
+# Secrets and local environment files
+.env
+.env.*
+!.env.example
+secrets/
+*.key
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.nox/
+
+# Coverage, packaging, and build output
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+build/
+dist/
+*.egg-info/
+
+# Local research state and generated data
+data/
+runtime/
+cache/
+logs/
+tmp/
+temp/
+downloads/
+research-sessions/
+embeddings/
+vector-indexes/
+
+# Local databases
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+
+# Model weights and large binary artifacts
+models/
+*.gguf
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+
+# Downloaded research documents
+*.pdf
+*.html
+*.htm
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Keep explicitly documented placeholders when needed
+!.gitkeep
