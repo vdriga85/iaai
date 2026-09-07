@@ -1,0 +1,21 @@
+{% extends 'base.html' %}{% block title %}Источники{% endblock %}{% block content %}
+<h2>Источники</h2><a href="{{ url_for('details', research_id=research_id) }}">К исследованию</a>
+<section><h3>Добавить URL</h3><p>Только разрешённые публичные HTTP(S) HTML-страницы. Без входа, обхода ограничений, PDF или выполнения JavaScript. Добавляйте материалы, которые вправе использовать.</p>
+<form method="post" action="{{ url_for('source_url', research_id=research_id) }}"><input type="hidden" name="csrf" value="{{ session.csrf }}"><label for="url">Ссылка на источник</label><input id="url" name="url" type="url" required><button>Загрузить источник</button></form></section>
+<section><h3>Импортировать текст вручную</h3><p>Импорт помечается HUMAN_IMPORTED. Повторить извлечение из исходного файла будет невозможно; не выдавайте догадки за факты.</p>
+<form method="post" action="{{ url_for('source_text', research_id=research_id) }}"><input type="hidden" name="csrf" value="{{ session.csrf }}">
+<label for="text">Текст источника</label><textarea id="text" name="text" required></textarea>
+<label for="manual_url">Ссылка (необязательно)</label><input id="manual_url" name="url" type="url">
+<label for="title">Название (необязательно)</label><input id="title" name="title">
+<label for="source_date">Дата публикации (если известна)</label><input id="source_date" name="source_date" type="date">
+<label for="initiated_by">Кто инициировал импорт</label><input id="initiated_by" name="initiated_by" value="local-user" required>
+<label for="note">Примечание / происхождение текста</label><textarea id="note" name="note"></textarea><button>Импортировать текст вручную</button></form></section>
+<section><h3>Полученные материалы</h3><p>Включение в корпус — ручной выбор, не подтверждение достоверности. Неизвестная дата остаётся неизвестной.</p>
+{% for item in sources %}{% set a=item.record.artifact %}<article><h4>{{ a.title or 'Без названия' }}</h4><p>{{ item.record.source.canonical_url or 'Без URL' }} · {{ 'Импортировано вручную' if item.record.observation.provenance == 'HUMAN_IMPORTED' else 'Загружено по URL' }}</p><p>Извлечение: {{ a.status }} · Допуск: {{ item.eligibility }}</p>
+{% if item.duplicate_text_candidates %}<p class="notice">Кандидат в дубликаты текста. Это не вывод о независимости источников.</p>{% endif %}
+<a href="{{ url_for('artifact_details',artifact_id=a.artifact_id) }}">Открыть источник</a>
+<form method="post" action="{{ url_for('corpus_select',research_id=research_id) }}"><input type="hidden" name="csrf" value="{{ session.csrf }}"><input type="hidden" name="artifact_id" value="{{ a.artifact_id }}">
+{% if a.artifact_id in corpus.draft.artifact_ids %}<p>Включён в рабочий корпус</p><button name="action" value="exclude">Исключить из рабочего корпуса</button>{% elif item.eligibility in ['ELIGIBLE','SOURCE_DATE_UNKNOWN'] %}<button name="action" value="include">Включить в рабочий корпус</button>{% endif %}</form></article>{% else %}<p>Источников пока нет.</p>{% endfor %}</section>
+<section><h3>Корпус</h3><p>В рабочем наборе: {{ corpus.draft.artifact_ids|length }} материалов. Изменения рабочего набора не меняют уже зафиксированные снимки.</p><form method="post" action="{{ url_for('corpus_freeze',research_id=research_id) }}"><input type="hidden" name="csrf" value="{{ session.csrf }}"><button>Зафиксировать корпус</button></form>
+{% for snap in corpus.snapshots %}<p><a href="{{ url_for('corpus_snapshot',snapshot_id=snap.snapshot_id) }}">Снимок №{{ snap.version }} — поиск по корпусу</a> · {{ snap.created_at }}</p>{% endfor %}</section>
+{% endblock %}

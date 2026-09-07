@@ -1,5 +1,10 @@
 # Phase 1 / Step 1: executable session foundation
 
+This document describes the accepted Step 1 boundary. The subsequent
+[Step 2 corpus extension](phase1-corpus.md) adds acquisition and retrieval with migration 2,
+without changing Step 1 snapshot schemas or hashes. Statements below about deferred Step 2
+functionality are historical scope notes, not the current feature list.
+
 This is a local engineering UI, **not an analysis engine**. Creating a session records a
 `CREATED` Research, Revision 1 and Manifest v0.1. It does not start an evaluated run,
 reserve hardware, acquire sources, execute policies or claim methodology validation.

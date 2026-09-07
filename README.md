@@ -13,8 +13,9 @@ paid APIs, hosted services, or cloud infrastructure.
 
 Phase 1 / Step 1 is executable: create and inspect research sessions through a local browser
 UI or CLI, with immutable protocol/policy snapshots, revision history and runtime manifests
-persisted in SQLite. **No research analysis is performed.** Acquisition, models, evidence,
-reports and recursion remain unimplemented.
+persisted in SQLite. Step 2 adds public HTML/manual acquisition, exact chunks and frozen corpus
+BM25 search. **No research analysis is performed.** Models, evidence assessment, reports
+and recursion remain unimplemented.
 
 Architecture v0.1 is **ACCEPTED FOR EXPERIMENTAL IMPLEMENTATION**. This does not validate
 the methodology: Phase 1 is a human-assisted experiment, calibration defaults remain
@@ -32,7 +33,11 @@ iaai serve
 
 Open http://127.0.0.1:8765 → **Новое исследование** → fill idea, scope and plain-language questions →
 **Создать исследование**. Constraints are optional. Details show the policy, hashes, revision
-and manifest. Stop with Ctrl+C; run `iaai serve` again and the same session remains.
+and manifest. Step 2: open **Источники и корпус**, add a public HTML URL or import text,
+include materials, choose **Зафиксировать корпус**, then search the frozen snapshot with BM25.
+This is text retrieval, not a truth assessment or an analytical conclusion.
+See [corpus guide](docs/phase1-corpus.md) for security, retention and limitations.
+Stop with Ctrl+C; run `iaai serve` again and the same session remains.
 The default database is `./runtime/iaai.db`, ignored by Git. Keep the same working directory
 or use an explicit `--db` path. Never delete the runtime directory to upgrade the application.
 

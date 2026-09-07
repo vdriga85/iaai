@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% block title %}Источник{% endblock %}{% block content %}
+{% set a=record.artifact %}{% set o=record.observation %}<h2>{{ a.title or 'Источник без названия' }}</h2>
+<a href="{{ url_for('sources',research_id=o.research_id) }}">Источники и корпус</a>
+<section><p>{{ 'Импортировано вручную — HUMAN_IMPORTED' if o.provenance == 'HUMAN_IMPORTED' else 'Прямое получение публичной страницы' }}</p>
+<dl><dt>URL</dt><dd>{{ record.source.canonical_url or 'Не указан' }}</dd><dt>Статус загрузки</dt><dd>{{ o.status }}</dd><dt>Тип / размер</dt><dd>{{ o.media_type or 'Неизвестен' }} / {{ o.byte_count|byte_size }}</dd><dt>Получено</dt><dd>{{ o.retrieved_at }}</dd><dt>Извлечение</dt><dd>{{ a.status }}</dd><dt>Дата публикации</dt><dd>{{ a.source_date or 'Неизвестна — UNKNOWN' }}</dd><dt>Автор</dt><dd>{{ a.author or 'Неизвестен' }}</dd><dt>Происхождение метаданных</dt><dd>{{ a.metadata_origin }}</dd><dt>Допуск в корпус</dt><dd>{{ eligibility }}</dd><dt>Инициатор / примечание</dt><dd>{{ o.initiated_by }} / {{ o.note }}</dd></dl>
+{% if eligibility == 'OUTSIDE_SOURCE_CUTOFF' %}<p class="error">Дата источника позже ограничения исследования. Включение в корпус запрещено.</p>{% endif %}
+<h3>Предупреждения</h3><p>HTML обрабатывается без JavaScript; полнота извлечения не гарантируется. Дата из HTML — заявление издателя, не независимая проверка.</p><ul>{% for warning in o.warnings + a.warnings %}<li>{{ warning }}</li>{% endfor %}</ul></section>
+<section><h3>Нормализованный текст{% if selected %} — точный фрагмент{% endif %}</h3>
+{% if selected %}<p>Символы {{ selected.start }}–{{ selected.end }} (конец не включён; Unicode code points).</p><pre>{{ a.text[:selected.start] }}<mark>{{ selected.text }}</mark>{{ a.text[selected.end:] }}</pre>{% else %}<pre>{{ a.text or 'Текст не извлечён. Можно использовать ручной импорт с явным происхождением.' }}</pre>{% endif %}
+<h3>Фрагменты</h3>{% for c in record.chunks %}<p><a href="{{ url_for('chunk_details',artifact_id=a.artifact_id,chunk_id=c.chunk_id) }}">Открыть фрагмент {{ loop.index }}</a> · {{ c.start }}–{{ c.end }}</p>{% endfor %}</section>
+<details><summary>Технические детали: цепочка URL, хеши, версии, точные данные</summary><pre>{{ record.model_dump(mode='json')|tojson(indent=2) }}</pre></details>
+{% endblock %}

@@ -9,6 +9,7 @@ from flask import Flask, abort, redirect, render_template, request, session, url
 from werkzeug.exceptions import HTTPException, SecurityError
 
 from iaai.application import ResearchService
+from iaai.corpus_web import register_corpus_routes
 from iaai.errors import IAAIError
 from iaai.web_display import (
     CONSTRAINT_TYPES,
@@ -105,6 +106,8 @@ def create_app(service: ResearchService) -> Flask:
         operators=OPERATORS,
         policy_statuses=POLICY_STATUSES,
     )
+    if service.corpus is not None:
+        register_corpus_routes(app, service.corpus)
 
     @app.before_request
     def protect_local_write():
@@ -190,7 +193,7 @@ def create_app(service: ResearchService) -> Flask:
                 "VALIDATION_ERROR", "Версия исследования: укажите целое число от 1."
             ) from exc
         bundle = service.get(research_id, revision)
-        return render_template("details.html", bundle=bundle)
+        return render_template("details.html", bundle=bundle, has_corpus=service.corpus is not None)
 
     @app.get("/diagnostics")
     def diagnostics():

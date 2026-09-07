@@ -52,11 +52,13 @@ class ResearchService:
         default_policy: ResearchPolicy,
         capture_runtime: Callable[[], RuntimeMetadata],
         system_diagnostics: Callable[[], dict],
+        corpus=None,
     ):
         self.store = store
         self.default_policy = default_policy
         self.capture_runtime = capture_runtime
         self.system_diagnostics = system_diagnostics
+        self.corpus = corpus
 
     def create(self, protocol_json: str, policy_json: str | None = None) -> RevisionBundle:
         protocol = parse_protocol(protocol_json)
@@ -156,4 +158,10 @@ class ResearchService:
             result["ok"] = False
         result["policy_hash"] = self.default_policy.content_hash
         result["policy_status"] = self.default_policy.status
+        if self.corpus is not None:
+            try:
+                result["corpus"] = self.corpus.diagnostics()
+            except IAAIError as exc:
+                result["corpus"] = {"error": exc.as_dict()}
+                result["ok"] = False
         return result
