@@ -137,7 +137,25 @@ def display_error(error: IAAIError) -> dict:
                     "Для набора вопросов укажите и ссылку, и версию либо оставьте оба пустыми."
                 )
             messages.append(f"{label}: {hint}")
-    elif error.code == "VALIDATION_ERROR":
+    elif error.code in {
+        "VALIDATION_ERROR",
+        "UNSAFE_URL",
+        "IMPORT_PROVENANCE",
+        "IMPORT_DATE",
+        "TEXT_LIMIT",
+        "EMPTY_TEXT",
+        "EMPTY_CORPUS",
+        "CORPUS_LIMIT",
+        "OUTSIDE_SOURCE_CUTOFF",
+        "ARTIFACT_NOT_ACCEPTABLE",
+        "QUERY_LIMIT",
+        "EMPTY_QUERY",
+        "FTS5_UNAVAILABLE",
+        "INDEX_VERSION_MISMATCH",
+        "CHUNK_VERSION_MISMATCH",
+        "RAW_CACHE_LIMIT",
+        "CORPUS_CONFLICT",
+    }:
         messages = [error.message]  # Form adapter messages are already Russian.
     elif error.code == "NOT_FOUND":
         messages = ["Исследование или сохранённая версия не найдены. Вернитесь к списку."]

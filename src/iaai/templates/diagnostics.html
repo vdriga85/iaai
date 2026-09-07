@@ -2,6 +2,7 @@
 {% block title %}Диагностика{% endblock %}
 {% block content %}
 <h2>Диагностика системы</h2>
+{% if result.corpus and not result.corpus.error %}<section><h3>Корпус и загрузка</h3><dl><dt>SQLite FTS5</dt><dd>{{ 'OK' if result.corpus.fts5_available else 'Недоступно — корпус сохраняется без поиска' }}</dd><dt>Папка кэша доступна для записи</dt><dd>{{ 'OK' if result.corpus.cache_directory_writable else 'Недоступно' }}</dd><dt>Размер временного raw-кэша</dt><dd>{{ result.corpus.raw_cache_bytes|byte_size }}</dd><dt>Версия схемы корпуса</dt><dd>{{ result.corpus.corpus_schema_version }}</dd><dt>Версия индекса</dt><dd>{{ result.corpus.index_version }}</dd></dl><p>Интернет не является обязательным условием запуска. Поиск работает локально.</p></section>{% endif %}
 <p>Проверка текущего окружения и базы данных. Это не проверка качества идеи или методологии.</p>
 {% set db = result.database %}
 <section><h3>База данных: {{ 'OK' if result.ok else 'Ошибка' }}</h3>

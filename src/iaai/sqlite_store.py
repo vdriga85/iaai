@@ -7,6 +7,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from iaai.corpus_migration import MIGRATION_2
 from iaai.domain import (
     Research,
     ResearchPolicy,
@@ -38,6 +39,7 @@ MIGRATIONS = (
             for action in ("UPDATE", "DELETE")
         ),
     ),
+    MIGRATION_2,
 )
 
 
@@ -78,6 +80,8 @@ class SQLiteResearchStore:
             connection.execute("BEGIN IMMEDIATE")
             # Recheck after acquiring lock: another process may have initialized it.
             version = connection.execute("PRAGMA user_version").fetchone()[0]
+            if version:
+                self._check_schema(connection, version)
             for index in range(version, len(MIGRATIONS)):
                 for statement in MIGRATIONS[index]:
                     connection.execute(statement)
@@ -116,11 +120,11 @@ class SQLiteResearchStore:
                 time.sleep(min(0.01, remaining))  # OS polling cadence, not research calibration.
 
     @staticmethod
-    def _check_schema(connection):
-        # Match the exact v1 structure, including immutability triggers. No silent repairs.
+    def _check_schema(connection, version=None):
+        # Validate the old structure before upgrade, and current structure afterward.
         expected = sqlite3.connect(":memory:")
         try:
-            for migration in MIGRATIONS:
+            for migration in MIGRATIONS[:version]:
                 for statement in migration:
                     expected.execute(statement)
             query = (
@@ -129,7 +133,7 @@ class SQLiteResearchStore:
             )
             actual = [tuple(row) for row in connection.execute(query)]
             if actual != expected.execute(query).fetchall():
-                raise IAAIError("DATABASE_SCHEMA", "Database structure does not match schema v1")
+                raise IAAIError("DATABASE_SCHEMA", "Database structure does not match schema")
         finally:
             expected.close()
 

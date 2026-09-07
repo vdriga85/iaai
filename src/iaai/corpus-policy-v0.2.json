@@ -1,0 +1,12 @@
+{
+  "schema_version": "0.2", "policy_id": "phase1-corpus", "version": 1,
+  "status": "UNVALIDATED",
+  "connect_timeout_seconds": 10, "read_timeout_seconds": 15,
+  "fetch_deadline_seconds": 60, "max_fetch_bytes": 2097152, "max_redirects": 5,
+  "raw_cache_bytes": 536870912, "raw_cache_ttl_seconds": 3600,
+  "max_text_chars": 2000000, "chunk_chars": 1200,
+  "max_corpus_artifacts": 100, "max_corpus_chars": 20000000,
+  "search_limit": 20, "query_chars": 500,
+  "chunking_version": "block-char-v1", "index_version": "fts5-unicode61-bm25-v1",
+  "supported_media_types": ["text/html", "application/xhtml+xml"]
+}

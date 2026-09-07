@@ -7,6 +7,7 @@ from pathlib import Path
 
 from iaai.application import ResearchService
 from iaai.bootstrap import build_service
+from iaai.corpus_cli import add_commands, execute
 from iaai.errors import IAAIError
 
 
@@ -30,6 +31,7 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument("--policy", type=Path, required=name == "revise")
     manifest = commands.add_parser("manifest").add_subparsers(dest="action", required=True)
     manifest.add_parser("show").add_argument("id")
+    add_commands(commands)
     return root
 
 
@@ -55,7 +57,9 @@ def main(argv: list[str] | None = None, service: ResearchService | None = None) 
                 host="127.0.0.1", port=args.port, debug=False, use_reloader=False
             )
             return 0
-        if args.command == "doctor":
+        if args.command in ("source", "corpus"):
+            result = execute(args, service.corpus, read_json)
+        elif args.command == "doctor":
             result = service.doctor()
         elif args.command == "manifest":
             result = service.get_manifest(args.id).model_dump(mode="json")
