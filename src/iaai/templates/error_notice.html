@@ -1,0 +1,6 @@
+<div class="error" role="alert">
+<p>Не удалось выполнить действие:</p>
+<ul>{% for message in error.messages %}<li>{{ message }}</li>{% endfor %}</ul>
+<details><summary>Технические сведения об ошибке</summary>
+<pre>{{ error.technical|tojson(indent=2) }}</pre></details>
+</div>

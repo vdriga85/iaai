@@ -16,13 +16,9 @@ python -m venv .venv
 .\.venv\Scripts\iaai.exe serve
 ```
 
-Open http://127.0.0.1:8765. Navigation: Research, New Research, Diagnostics.
-Form outputs are one name per line (text), or `name|number|EUR|Description` for numbers.
-The form documents supported units and the separate constraint JSON fields:
-`output`, `type`, `operator`, `value`, `unit`, `origin`. `[]` means no constraints.
-No implicit business verdict is inferred from outputs or policy thresholds.
-Dates are ISO YYYY-MM-DD. Assumptions are one per line; languages comma-separated.
-Optional custom policy JSON uses the same schema as CLI, never a second UI-only format.
+Open http://127.0.0.1:8765. The prototype UI is Russian; see the field guide below.
+Ordinary outputs are plain-language descriptions, one per line. Typed outputs and constraint/
+policy JSON are optional advanced inputs. The CLI and all persisted JSON schemas are unchanged.
 
 The UI uses Flask routing, Jinja autoescaping and its lightweight test client. The standard
 library HTTP server would require hand-building form handling, routing and template escaping;
@@ -142,7 +138,7 @@ logs from the local development server are not a durable audit trail.
 
 ## Verification and deferred work
 
-Run `ruff check .` and `pytest` (71 passing tests at implementation). Tests cover schema validation,
+Run `ruff check .` and `pytest` (88 passing tests after the Russian UX correction). Tests cover schema validation,
 hashes/immutability, creation,
 history, transaction rollback, process restart, database settings/failure modes, Git metadata,
 shared application services, CLI, Flask form/details/diagnostics, localhost/CSRF/escaping and
@@ -152,3 +148,68 @@ Step 2 is **not** included: no acquisition, sources, corpus, BM25, models, evide
 tasks, scheduler execution, research loop, convergence, reporting, PDFs, scoring or cloud.
 Resource ceilings are declarations, not enforcement for future computation. Actual host
 admission checks and metering belong to the future evaluated-run entry point.
+
+## Русский интерфейс prototype UI
+
+Навигация: **Исследования → Новое исследование → Диагностика**. Это только сохранение
+исследовательской сессии: анализ рынка и модели ещё не подключены. Переключателя языков
+и отдельного i18n framework нет. Внутренние поля и CLI остаются английскими.
+
+- **Исходная идея** — опишите замысел обычными словами.
+- **Что именно мы исследуем** — нейтральное описание и границы, без «хорошая/плохая».
+  Пока задаётся вручную; Idea Parser не реализован.
+- **Конфигурация продукта** — конкретная версия продукта, а не весь класс устройств.
+- **Рынок / география** — страна, регион или рынок.
+- **Для кого предназначен продукт** — предполагаемые пользователи или покупатели.
+- **Языки источников** — коды через запятую: `en, de, ru`.
+- **Горизонт исследования** — период или глубина прогноза, например ближайшие 5 лет.
+- **Использовать источники не позднее** — необязательная историческая граница публикаций.
+  Это не дата завершения исследования. Для текущего исследования оставьте пустым.
+  Поле использует календарь `type=date`; в Protocol сохраняется ISO-дата или null.
+- **Явные предположения** — временные условия, не доказанные факты, по одному на строку.
+
+### Что нужно установить
+
+В обычном поле пишите понятные описания по одному на строку, например:
+
+```text
+Время работы от батареи
+Диапазон цены
+Стоимость ремонта
+Существующие альтернативы
+```
+
+Web adapter сохраняет каждую непустую строку дословно в `description` (включая пробелы
+внутри строки и по краям), с типом `text` и единицей `text`. Внутренние имена — `output_1`,
+`output_2` и т.д. Пустые строки пропускаются. Порядок детерминирован; имена из расширенного
+поля пропускаются при нумерации, чтобы не было коллизий. Одинаковые описания допускаются
+как разные показатели с уникальными именами. Символ `|` в обычном поле — обычный текст.
+Сохранённые Protocol и хеши не пересчитываются при отображении и не изменяются локализацией.
+
+В **Расширенных настройках показателей** доступен прежний typed syntax:
+`prototype_cost|number|EUR|Стоимость прототипа`. Эти строки добавляются к обычным вопросам.
+Можно заполнить только расширенное поле. Укажите уникальное ASCII-имя и поддерживаемую
+единицу; числовой показатель не подразумевает бизнес-оценки.
+
+### Необязательные технические настройки
+
+**Явные ограничения** — только явно заданные границы, а не мнение программы. По умолчанию
+их нет (`[]`). JSON находится в закрытом блоке **Расширенные настройки / для разработчика**.
+Набор вопросов и его версия (playbook) — в **Расширенных настройках исследования**.
+Custom Policy JSON — в **Расширенных настройках для разработчика**. Обычный пользователь
+не обязан заполнять ни одно из этих полей. Введённые расширенные значения остаются раскрытыми
+после ошибки, чтобы их можно было исправить.
+
+### Детали, ошибки и диагностика
+
+Страница исследования показывает описания вопросов, происхождение ограничений и объяснения
+версии/политики. `UNVALIDATED` означает непроверенную методологию, а не плохую идею.
+Ревизия — неизменяемая версия Protocol/Policy; Manifest — технический паспорт её окружения.
+Хеши и идентификаторы доступны в **Технических деталях**, точные значения — в
+**Показать исходный JSON**. Лимиты отображаются в GiB/MiB и часах/минутах без изменения Policy.
+Округление размера применяется только для показа; исходный JSON сохраняет точное число байт.
+
+Ошибки формы показывают русские названия известных полей и подсказки. Исходный код ошибки,
+operation ID и техническое сообщение находятся в раскрывающемся блоке. Ввод не логируется.
+Диагностика использует прежний application service и неизменные diagnostic keys; названия,
+состояния и размеры переводятся только в представлении. Host/CSRF-защита остаётся включённой.

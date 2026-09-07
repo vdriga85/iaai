@@ -20,7 +20,7 @@ def valid_form(client):
         "geography": "Australia",
         "target_population": "Adults",
         "languages": "en",
-        "key_outputs": "prototype_cost|number|EUR|Prototype cost\nalternatives",
+        "key_outputs": "Время работы от батареи\nСуществующие альтернативы",
         "constraints": "[]",
     }
 
@@ -42,14 +42,14 @@ def test_ui_shared_creation_and_read(service, monkeypatch):
     details = client.get(response.location)
     assert details.status_code == 200
     for label in (
-        b"A test idea",
-        b"UNVALIDATED EXPERIMENTAL DEFAULTS",
-        b"Revision #1",
-        b"Run Manifest",
-        b"None supplied",
-        b"Show raw JSON",
+        "A test idea",
+        "UNVALIDATED",
+        "Ревизия исследования №1",
+        "Manifest — технический паспорт",
+        "Не заданы",
+        "Показать исходный JSON",
     ):
-        assert label in details.data
+        assert label in details.get_data(as_text=True)
     assert b"A test idea" in client.get("/").data
     assert client.get("/diagnostics").status_code == 200
     assert b"5000" in client.get("/diagnostics").data
@@ -66,7 +66,7 @@ def test_ui_shared_creation_and_read(service, monkeypatch):
     [
         ("geography", ""),
         ("constraints", "bad JSON"),
-        ("key_outputs", "bad|format"),
+        ("advanced_key_outputs", "bad|format"),
         ("policy", '{"schema_version":"unknown"}'),
     ],
 )

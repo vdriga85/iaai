@@ -1,14 +1,61 @@
-{% extends 'base.html' %}{% block title %}Research Details{% endblock %}{% block content %}
+{% extends 'base.html' %}
+{% block title %}Исследование{% endblock %}
+{% block content %}
 {% set r = bundle.research %}{% set p = bundle.protocol %}{% set v = bundle.revision %}{% set m = bundle.manifest %}
-<h2>Research Details</h2><section><dl><dt>Research ID</dt><dd>{{ r.research_id }}</dd><dt>Status</dt><dd>{{ r.status }} — session only, not an evaluated run</dd><dt>Created</dt><dd>{{ r.created_at.isoformat() }}</dd><dt>Current revision</dt><dd>{{ r.current_revision }}</dd></dl></section>
-<section><h2>Original Idea</h2><p>{{ p.original_idea }}</p><h3>Scope</h3><dl>
-{% for name in ['neutral_description','product_scope','geography','target_population','languages','time_horizon','source_cutoff','assumptions','playbook_reference','playbook_version'] %}<dt>{{ name.replace('_',' ').capitalize() }}</dt><dd>{% set value = p|attr(name) %}{% if not value %}Not supplied{% elif name in ['languages','assumptions'] %}{{ value|join('; ') }}{% else %}{{ value }}{% endif %}</dd>{% endfor %}</dl></section>
-<section><h2>Key Outputs</h2><ul>{% for output in p.key_outputs %}<li><strong>{{ output.name }}</strong>: {{ output.description }} ({{ output.value_type }}, {{ output.unit }})</li>{% endfor %}</ul>
-<h3>Constraints</h3>{% if p.constraints %}<table><tr><th>Output</th><th>Type</th><th>Value</th><th>Unit</th><th>Source / origin</th></tr>{% for c in p.constraints %}<tr><td>{{ c.output }}</td><td>{{ c.type }}</td><td>{{ c.operator }} {{ c.value }}</td><td>{{ c.unit }}</td><td>{{ c.origin }}</td></tr>{% endfor %}</table>{% else %}<p>None supplied. No business threshold has been inferred.</p>{% endif %}</section>
-<section><h2>Research Policy</h2><p>{{ bundle.policy.policy_id }} · version {{ bundle.policy.version }} · {{ bundle.policy.status }}</p>
-{% if bundle.policy.status == 'UNVALIDATED' %}<p class="notice">UNVALIDATED EXPERIMENTAL DEFAULTS</p>{% endif %}
-<p>Hash: <code>{{ v.policy_hash }}</code></p><h3>Declared resource limits (not execution or reservations)</h3><dl>{% for key, value in bundle.policy.resources.model_dump().items() %}<dt>{{ key }}</dt><dd>{{ value }}</dd>{% endfor %}</dl></section>
-<section><h2>Revision #{{ v.revision }}</h2><p>{{ v.created_at.isoformat() }}</p><p>Protocol: {{ p.protocol_id }} / v{{ p.version }}</p><p>Protocol hash: <code>{{ v.protocol_hash }}</code></p><p>Policy hash: <code>{{ v.policy_hash }}</code></p>
-{% if v.revision > 1 %}<a href="{{ url_for('details', research_id=r.research_id, revision=v.revision-1) }}">Previous revision</a>{% endif %} <a href="{{ url_for('details', research_id=r.research_id) }}">Current revision</a></section>
-<section><h2>Run Manifest</h2><dl><dt>Run ID</dt><dd>{{ m.run_id }}</dd><dt>Schema / hash</dt><dd>{{ m.schema_version }} / <code>{{ m.content_hash }}</code></dd><dt>Git commit</dt><dd>{{ m.runtime.git_commit or 'Unavailable' }}</dd><dt>Repository state</dt><dd>{{ 'UNAVAILABLE' if m.runtime.git_dirty is none else 'DIRTY' if m.runtime.git_dirty else 'CLEAN' }}</dd><dt>Python</dt><dd>{{ m.runtime.python_implementation }} {{ m.runtime.python_version }}</dd><dt>OS</dt><dd>{{ m.runtime.os }}</dd><dt>Hardware</dt><dd>{{ m.runtime.machine }} · {{ m.runtime.logical_cpu_count }} logical CPUs · physical RAM bytes: {{ m.runtime.physical_memory_bytes or 'Unavailable' }}</dd></dl>
-<details><summary>Show raw JSON (Protocol / Policy / Revision / Manifest)</summary><pre>{{ bundle.model_dump(mode='json')|tojson(indent=2) }}</pre></details></section>{% endblock %}
+<h2>Исследование</h2>
+<section><p><strong>Создано — анализ не запускался.</strong> Настройки сохранены, но ответов на вопросы пока нет.</p>
+<dl><dt>Создано (UTC)</dt><dd>{{ r.created_at.strftime('%d.%m.%Y %H:%M') }}</dd><dt>Текущая версия исследования</dt><dd>{{ r.current_revision }}</dd></dl></section>
+<section><h2>Исходная идея</h2><p>{{ p.original_idea }}</p>
+<h3>Границы исследования</h3><dl>
+{% for name in ['neutral_description','product_scope','geography','target_population','languages','time_horizon','source_cutoff','assumptions'] %}
+<dt>{{ field_labels[name] }}</dt><dd>{% set value = p|attr(name) %}{% if not value %}Не указано{% elif name in ['languages','assumptions'] %}{{ value|join('; ') }}{% else %}{{ value }}{% endif %}</dd>
+{% endfor %}</dl>
+{% if p.source_cutoff %}<p class="hint">Указанная дата исключает более поздние источники из будущего исследования. Это не дата его окончания.</p>{% endif %}
+<details><summary>Расширенные настройки исследования</summary><dl><dt>Набор исследовательских вопросов</dt><dd>{{ p.playbook_reference or 'Не указан' }}</dd><dt>Версия набора</dt><dd>{{ p.playbook_version or 'Не указана' }}</dd></dl></details>
+</section>
+<section><h2>Что нужно установить в ходе исследования</h2>
+<p>Это вопросы для будущего сбора доказательств, а не готовые выводы или оценка идеи.</p>
+<ul>{% for output in p.key_outputs %}<li>{{ output.description }}{% if output.value_type == 'number' %} <small>(число, {{ output.unit }})</small>{% endif %}</li>{% endfor %}</ul>
+<h3>Явные ограничения</h3>
+{% if p.constraints %}
+<table><tr><th>Показатель</th><th>Происхождение</th><th>Граница</th><th>Источник</th></tr>
+{% for c in p.constraints %}<tr><td>{% for output in p.key_outputs if output.name == c.output %}{{ output.description }}{% endfor %}</td><td>{{ constraint_types[c.type] }}</td><td>{{ operators[c.operator] }} {{ c.value }}{% if c.unit != 'text' %} {{ c.unit }}{% endif %}</td><td>{{ c.origin }}</td></tr>{% endfor %}</table>
+{% else %}<p>Не заданы. Никаких оценок «хорошо/плохо» или бизнес-порогов программа не добавила.</p>{% endif %}
+</section>
+<section><h2>Политика исследования</h2>
+<p>{{ policy_statuses[bundle.policy.status] }} — <code>{{ bundle.policy.status }}</code>.</p>
+<p>Технические правила будущего планирования, ограничения ресурсов и остановки. Это не оценка вашей идеи.</p>
+<h3>Заданные лимиты ресурсов</h3><p class="hint">Это сохранённые лимиты, а не использованные или зарезервированные ресурсы.</p>
+{% set resources = bundle.policy.resources %}
+<dl><dt>Место на диске для одной сессии</dt><dd>{{ resources.run_disk_bytes|byte_size }}</dd>
+<dt>Общий дисковый бюджет</dt><dd>{{ resources.pool_disk_bytes|byte_size }}</dd>
+<dt>Резерв свободного места</dt><dd>{{ resources.host_free_reserve_bytes|byte_size }}</dd>
+<dt>Процессорное время</dt><dd>{{ resources.cpu_seconds|duration }}</dd>
+<dt>Время активной работы</dt><dd>{{ resources.active_elapsed_seconds|duration }}</dd>
+<dt>Общий срок выполнения</dt><dd>{{ resources.wall_deadline_seconds|duration }}</dd>
+<dt>Оперативная память</dt><dd>{{ resources.rss_bytes|byte_size }}</dd></dl>
+</section>
+<section><h2>Ревизия исследования №{{ v.revision }}</h2>
+<p>Неизменяемая сохранённая версия Protocol (что исследуем) и Policy (технические правила исследования).</p>
+<p>Сохранена {{ v.created_at.strftime('%d.%m.%Y %H:%M') }} UTC.</p>
+{% if v.revision > 1 %}<a href="{{ url_for('details', research_id=r.research_id, revision=v.revision-1) }}">Предыдущая версия</a> · {% endif %}<a href="{{ url_for('details', research_id=r.research_id) }}">Текущая версия</a>
+</section>
+<section><h2>Manifest — технический паспорт</h2>
+<p>Версия кода, Python, ОС и окружение, с которыми была создана эта ревизия. Паспорт помогает воспроизвести условия работы, но не означает, что анализ уже выполнен.</p>
+<details><summary>Технические детали</summary><dl>
+<dt>Research ID / status</dt><dd>{{ r.research_id }} / {{ r.status }}</dd>
+<dt>Protocol ID / version</dt><dd>{{ p.protocol_id }} / {{ p.version }}</dd>
+<dt>Policy ID / version</dt><dd>{{ bundle.policy.policy_id }} / {{ bundle.policy.version }}</dd>
+<dt>protocol_hash</dt><dd><code>{{ v.protocol_hash }}</code></dd>
+<dt>policy_hash</dt><dd><code>{{ v.policy_hash }}</code></dd>
+<dt>Run ID</dt><dd>{{ m.run_id }}</dd>
+<dt>Manifest schema / hash</dt><dd>{{ m.schema_version }} / <code>{{ m.content_hash }}</code></dd>
+<dt>Git commit</dt><dd>{{ m.runtime.git_commit or 'Недоступно' }}</dd>
+<dt>Состояние репозитория при создании</dt><dd>{{ m.runtime.git_dirty|repository_state }}</dd>
+<dt>Python</dt><dd>{{ m.runtime.python_implementation }} {{ m.runtime.python_version }}</dd>
+<dt>Операционная система</dt><dd>{{ m.runtime.os }}</dd>
+<dt>Оборудование</dt><dd>{{ m.runtime.machine }} · логических процессоров: {{ m.runtime.logical_cpu_count or 'Недоступно' }} · оперативная память: {{ m.runtime.physical_memory_bytes|byte_size }}</dd>
+</dl></details>
+<details><summary>Показать исходный JSON</summary><p>Точные значения и внутренние идентификаторы без перевода или округления.</p><pre>{{ bundle.model_dump(mode='json')|tojson(indent=2) }}</pre></details>
+</section>
+{% endblock %}

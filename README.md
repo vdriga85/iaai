@@ -30,8 +30,8 @@ iaai doctor
 iaai serve
 ```
 
-Open http://127.0.0.1:8765 → **New Research** → fill idea, scope and output names →
-**Create Research**. Constraints are optional. Details show the policy, hashes, revision
+Open http://127.0.0.1:8765 → **Новое исследование** → fill idea, scope and plain-language questions →
+**Создать исследование**. Constraints are optional. Details show the policy, hashes, revision
 and manifest. Stop with Ctrl+C; run `iaai serve` again and the same session remains.
 The default database is `./runtime/iaai.db`, ignored by Git. Keep the same working directory
 or use an explicit `--db` path. Never delete the runtime directory to upgrade the application.

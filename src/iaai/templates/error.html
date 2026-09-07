@@ -1,1 +1,7 @@
-{% extends 'base.html' %}{% block content %}<h2>Operation failed</h2><p class="error">{{ error.code }}: {{ error.message }}</p><p>Operation ID: {{ error.operation_id }}</p>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Ошибка{% endblock %}
+{% block content %}
+<h2>Действие не выполнено</h2>
+{% include 'error_notice.html' %}
+<p><a href="{{ url_for('home') }}">Вернуться к исследованиям</a> · <a href="{{ url_for('diagnostics') }}">Проверить диагностику</a></p>
+{% endblock %}
