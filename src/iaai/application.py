@@ -59,6 +59,7 @@ class ResearchService:
         self.capture_runtime = capture_runtime
         self.system_diagnostics = system_diagnostics
         self.corpus = corpus
+        self.proposals = None
 
     def create(self, protocol_json: str, policy_json: str | None = None) -> RevisionBundle:
         protocol = parse_protocol(protocol_json)
@@ -164,4 +165,9 @@ class ResearchService:
             except IAAIError as exc:
                 result["corpus"] = {"error": exc.as_dict()}
                 result["ok"] = False
+        if self.proposals is not None:
+            try:
+                result["proposal_model"] = self.proposals.diagnostics()
+            except IAAIError as exc:
+                result["proposal_model"] = {"status": "DIAGNOSTIC_ERROR", "error": exc.as_dict()}
         return result

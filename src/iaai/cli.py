@@ -9,6 +9,7 @@ from iaai.application import ResearchService
 from iaai.bootstrap import build_service
 from iaai.corpus_cli import add_commands, execute
 from iaai.errors import IAAIError
+from iaai.proposal_cli import add_proposal_commands, execute_proposal, serializable
 
 
 def parser() -> argparse.ArgumentParser:
@@ -32,6 +33,7 @@ def parser() -> argparse.ArgumentParser:
     manifest = commands.add_parser("manifest").add_subparsers(dest="action", required=True)
     manifest.add_parser("show").add_argument("id")
     add_commands(commands)
+    add_proposal_commands(commands)
     return root
 
 
@@ -57,7 +59,9 @@ def main(argv: list[str] | None = None, service: ResearchService | None = None) 
                 host="127.0.0.1", port=args.port, debug=False, use_reloader=False
             )
             return 0
-        if args.command in ("source", "corpus"):
+        if args.command in ("proposal", "model"):
+            result = serializable(execute_proposal(args, service.proposals))
+        elif args.command in ("source", "corpus"):
             result = execute(args, service.corpus, read_json)
         elif args.command == "doctor":
             result = service.doctor()
@@ -77,6 +81,10 @@ def main(argv: list[str] | None = None, service: ResearchService | None = None) 
             )
             result = bundle.model_dump(mode="json")
         print(json.dumps(result, indent=2, ensure_ascii=False, allow_nan=False))
+        if args.command == "model":
+            return 0 if result["status"] == "USABLE" else 1
+        if args.command == "proposal" and args.action == "run":
+            return 0 if result["status"] in ("PENDING_REVIEW", "ABSTAINED") else 1
         return 1 if args.command == "doctor" and not result["ok"] else 0
     except IAAIError as exc:
         print(json.dumps({"error": exc.as_dict()}, ensure_ascii=False))

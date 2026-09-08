@@ -21,4 +21,5 @@
 <dt>Python</dt><dd>{{ result.runtime.python_version }}</dd>
 <dt>Политика по умолчанию</dt><dd>{{ policy_statuses[result.policy_status] }} — {{ result.policy_status }}</dd></dl>
 <details><summary>Технические детали / исходный JSON</summary><pre>{{ result|tojson(indent=2) }}</pre></details></section>
+{% if result.proposal_model %}<section><h3>Локальная модель предложений</h3><p>Proposal model: {{ result.proposal_model.status }}</p><p>NOT_CONFIGURED означает «не настроена»; источники и поиск доступны без модели.</p><pre>{{ result.proposal_model|tojson(indent=2) }}</pre></section>{% endif %}
 {% endblock %}

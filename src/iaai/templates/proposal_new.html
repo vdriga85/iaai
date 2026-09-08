@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% block title %}Предложения модели{% endblock %}{% block content %}
+<h2>Новый вопрос для модели</h2>{% include 'proposal_notice.html' %}
+<p>Снимок {{ snapshot.snapshot_id }} · <code>{{ snapshot.corpus_hash }}</code></p>
+<p>Локальная модель: {{ model.status }} · {{ model.name }}</p>
+{% if model.status != 'USABLE' %}<p>Модель не настроена или недоступна. Источники и BM25 продолжают работать. Попытка сохранит диагностический результат без кандидатов.</p>{% endif %}
+<form method="post" action="{{ url_for('proposal_run',snapshot_id=snapshot.snapshot_id) }}">
+<input type="hidden" name="csrf" value="{{ session.csrf }}">
+<label for="question">Исследовательский вопрос</label><textarea id="question" name="question" maxlength="500" required></textarea>
+<p>BM25 ищет по словам вопроса без перевода и embeddings. CPU-генерация может занять несколько минут; дождитесь ответа, не отправляйте форму повторно.</p>
+<button>Сформировать предложения</button></form>
+<a href="{{ url_for('proposal_queue',research_id=snapshot.content.research_id) }}">Очередь проверки</a>
+{% endblock %}

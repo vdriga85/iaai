@@ -1,0 +1,10 @@
+{% extends 'base.html' %}{% block title %}Предложения модели{% endblock %}{% block content %}
+{% set r=operation.request %}<h2>Предложения модели</h2>{% include 'proposal_notice.html' %}
+<p>Операция {{ r.operation_id }} · {{ operation.status }}</p><h3>Исследовательский вопрос</h3><p>{{ r.question }}</p>
+<p>Research revision {{ r.research_revision }} · Корпус <a href="{{ url_for('corpus_snapshot',snapshot_id=r.snapshot_id) }}">{{ r.snapshot_id }}</a> · <code>{{ r.corpus_hash }}</code></p>
+<a href="{{ url_for('proposal_queue',research_id=r.research_id) }}">Очередь проверки</a>
+<h3>Использованные фрагменты</h3>{% for item in r.context %}<article><p>Rank {{ item.rank }} · BM25 {{ item.score }}</p><pre>{{ item.chunk.text }}</pre><a href="{{ url_for('chunk_details',artifact_id=item.chunk.artifact_id,chunk_id=item.chunk.chunk_id) }}">{{ item.chunk.chunk_id }} — точный фрагмент</a></article>{% else %}<p>Подходящих фрагментов нет.</p>{% endfor %}
+{% if operation.result and operation.result.parsed and operation.result.parsed.abstention %}<p>Модель воздержалась: {{ operation.result.parsed.abstention }}</p>{% endif %}
+{% set entries=operation.candidates %}{% include 'proposal_candidates.html' %}
+<details><summary>Аудит: точный prompt, конфигурация, raw output и provenance</summary><pre>{{ operation|proposal_json|tojson(indent=2) }}</pre></details>
+{% endblock %}

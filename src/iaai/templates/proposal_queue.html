@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block title %}Очередь проверки{% endblock %}{% block content %}
+<h2>Очередь проверки</h2>{% include 'proposal_notice.html' %}
+<a href="{{ url_for('details',research_id=research_id) }}">Исследование</a>
+<p>Счётчики действий, не оценка качества:</p><pre>{{ queue.measurements|tojson(indent=2) }}</pre>
+{% set entries=queue.entries %}{% include 'proposal_candidates.html' %}
+{% endblock %}
