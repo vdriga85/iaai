@@ -104,7 +104,7 @@ class ProposalRequest(Snapshot):
     model: ModelIdentity
     policy: ProposalPolicy
     policy_hash: Hash
-    prompt_version: Literal["proposal-chatml-v1"] = "proposal-chatml-v1"
+    prompt_version: Literal["proposal-chatml-v1", "proposal-chatml-v2"] = "proposal-chatml-v1"
     proposal_schema_version: Literal["0.3"] = "0.3"
     prompt: str
     prompt_hash: Hash

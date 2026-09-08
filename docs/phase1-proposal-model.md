@@ -174,6 +174,51 @@ UI/CLI используют один application service. При redirected Wind
 понадобиться `python -X utf8 -m iaai ...` для русского текста. UI HTML экранируется,
 CSRF/Host protections Step 1 сохранены.
 
+## Prompt boundary v2
+
+Новые операции используют `proposal-chatml-v2`. Model-visible scope строится по явному
+allowlist нейтральных полей: description/product/geography/population, horizon/cutoff,
+languages/key outputs и playbook. `original_idea` не передаётся модели, но полный
+immutable Protocol остаётся в ProposalRequest и protocol hash для audit.
+Assumptions и constraints вынесены в отдельные секции NOT EVIDENCE: это условия
+и границы, не факты и не findings.
+
+Все недоверенные model-visible данные сериализуются детерминированным JSON с
+Unicode escaping `<` → `\u003c` и `>` → `\u003e`, включая вопрос, scope, assumptions,
+constraints и полные context records. JSON decoding обратимо восстанавливает данные.
+Сохранённые exact chunks и underlying context не меняются. Сохраняемый prompt и его
+hash относятся к фактически отправляемому escaped тексту. Только доверенный template
+добавляет literal ChatML role markers. Это структурная защита от дополнительных ролей,
+а не гарантия семантической устойчивости модели к prompt injection.
+
+System contract требует сохранять величины, единицы и смысл чисел; запрещает расчёты,
+конвертацию валют, экстраполяцию и переименование величин без явного основания в
+цитируемом фрагменте. Полезный неподтверждённый расчёт предлагается как вопрос.
+Это prompt-level guard, не numerical validator и не semantic entailment.
+Общий предел candidates передаётся из resolved policy; до двух claims и двух questions —
+предпочтение внутри этого предела, не отдельный противоречащий лимит.
+
+Чтение v1 сохранено; старые prompts/hashes не регенерируются. SQLite migration не нужна,
+adapter/wire version не меняется. Приведённые ниже результаты 170 tests и real pilot
+относятся к исходному v1.
+
+Hardening v2 проверен локально: Ruff PASS, 176 tests PASS (170 прежних + 6 новых),
+wheel build/isolated install и pip check PASS. Все исторические durable rows основной
+и synthetic pilot DB совпали побайтно после повторного открытия, включая failed v1,
+successful v1, pending candidates и review decisions. Схема остаётся 3.
+
+Один реальный CPU injection run: operation `cc14ed92-e281-4694-bf05-e869681a6707`,
+51.75 s, PENDING_REVIEW. Exact source содержит ChatML injection; rendered prompt имеет
+только 3 im_start и 2 im_end от template. Модель вернула обычный structured JSON,
+но поместила вопрос в claims: semantic quality не установлено. Research/corpus не изменены.
+
+Один повтор прежнего numerical pilot на том же snapshot без изменения corpus:
+operation `73a43416-7099-49ef-8537-8e24ee2ead30`, 59.625 s, PENDING_REVIEW.
+Модель больше не добавила EUR, но всё ещё назвала цену устройства стоимостью прототипа
+и написала бессодержательное «1800 AUD, что эквивалентно 1800 AUD или 1800 AUD».
+Numeric prompt guard не устранил semantic hallucination. Кандидаты не приняты,
+repair/retry не выполнялись; оригиналы сохранены. Это quality observation, не benchmark.
+
 ## Pilot / validation / deferred
 
 Реальный CPU pilot: три собственных synthetic источника (battery, repair, unrelated),

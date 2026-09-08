@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from iaai.corpus_application import validated_operation
 from iaai.corpus_domain import TextChunk, digest
 from iaai.errors import IAAIError
-from iaai.proposal_context import SYSTEM_CONTRACT, assemble
+from iaai.proposal_context import PROMPT_VERSION, SYSTEM_CONTRACT, assemble
 from iaai.proposal_domain import (
     ContextChunk,
     ModelResponse,
@@ -119,6 +119,7 @@ class ProposalService:
             policy=self.policy,
             policy_hash=self.policy.content_hash,
             prompt=prompt,
+            prompt_version=PROMPT_VERSION,
             prompt_hash=digest(prompt),
             output_schema=schema,
             template_content=SYSTEM_CONTRACT + "\n" + schema,
