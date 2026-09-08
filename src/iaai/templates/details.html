@@ -7,6 +7,9 @@
 <section><h2>Вход одной фразой — происхождение настроек</h2>
 <p>Нейтрализация идеи: NOT_PERFORMED. Неуказанный scope — UNKNOWN, не предположение и не evidence. Системные направления исследования — не заявления пользователя.</p>
 <ul>{% for item in input_build.origins %}<li>{{ item.field }}: {{ item.origin }}{% if item.note %} — {{ item.note }}{% endif %}</li>{% endfor %}</ul>
+<p>Mapping в строгий Protocol (отдельно от происхождения данных):</p>
+<ul>{% for item in input_build.mapping %}<li>{{ item.field }}: {{ item.status }}</li>{% else %}<li>Legacy build: mapping status не записывался.</li>{% endfor %}</ul>
+<p>DEFERRED_NOT_MAPPED: значение сохранено дословно, но пока не применяется как ограничение Protocol.</p>
 <details><summary>Аудит input / builder / exact Protocol</summary><p>Build hash: {{ input_build.content_hash }}</p><pre>{{ input_build.model_dump(mode='json')|tojson(indent=2) }}</pre></details>
 </section>{% endif %}
 {% if has_corpus %}<section><h2>Источники</h2><p>Добавьте публичную HTML-страницу или текст вручную, выберите материалы и зафиксируйте корпус для поиска.</p><a class="button" href="{{ url_for('sources', research_id=r.research_id) }}">Источники и корпус</a></section>{% endif %}

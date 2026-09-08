@@ -9,7 +9,7 @@ Research CREATED, не запускает collectors, модель или analys
 ## Boundary
 
 `SimpleIdeaInput v0.1` → `OptionalClarifications` → pure `build_protocol`
-(`simple-explicit-v1`) → immutable `ProtocolBuild v0.1` → strict `ResearchProtocol v0.1`
+(`simple-explicit-v2`) → immutable `ProtocolBuild v0.1` → strict `ResearchProtocol v0.1`
 → существующий ResearchService. Flask только переводит поля формы в input JSON.
 Внутренний Protocol не сделан optional и не изменён. Existing corpus/proposal adapters
 используются без изменения. Нет ML parser, profile/history, network или cloud calls.
@@ -33,9 +33,11 @@ USER_SUPPLIED: значение и происхождение различимы
 уточнения scope и необходимых свидетельств. Это начальное направление, не фиктивный
 спрос/бюджет/вывод. Будущий playbook может заменить/расширить его явной ревизией.
 Additional questions становятся отдельными USER input-derived text outputs.
-Бюджет и другие ограничения сохраняются как явные unparsed text boundaries с USER
-origin и text equality constraint: equality относится к тексту описания границы,
-не к числовому бюджету. Валюта, знак сравнения, единицы и числовой смысл не угадываются.
+Бюджет и другие ограничения сохраняются дословно только в input/build с
+`USER_SUPPLIED` origin и отдельным mapping status `DEFERRED_NOT_MAPPED`.
+Они не становятся key outputs или constraints. Отсутствующие поля имеют
+`NOT_SUPPLIED`, явно спроецированные уточнения — `MAPPED`. Provenance и mapping
+различаются. Валюта, знак сравнения, единицы и числовой смысл не угадываются.
 Для числовых машинно-интерпретируемых constraints пока нужен advanced Protocol.
 
 ## Neutralization limitation
@@ -53,7 +55,8 @@ Idea Parser сознательно отложен, без ненадёжного
 Additive migration 4 добавляет только `input_builds`, FK на research revision и
 immutable UPDATE/DELETE triggers. Build и Research/Protocol/Revision/Manifest пишутся
 в одной транзакции; ошибка записи build откатывает всё создание. Build hash и
-детерминированный mapping перепроверяются при чтении. Старые исследования не получают
+детерминированный v2 mapping перепроверяются при чтении. Legacy v1 читается с проверкой
+hashes, без повторного построения или переписывания старого artifact. Старые исследования не получают
 поддельный input artifact; отсутствие строки означает legacy/advanced creation.
 Artifact привязан к конкретной исходной ревизии и не переносится при revise.
 
@@ -80,3 +83,9 @@ Protocol hash: `1bd7329e4e871478df39093f185dbfa2c820a9eb3dd55313f3584bade11c6d4a
 
 Итог: Ruff PASS, 191 tests PASS, wheel build/isolated install и pip check PASS.
 После полного restart browser details/audit показали тот же build hash и Protocol.
+
+Hardening v2: 193 tests PASS (включая Step 1–3), Ruff PASS. Budget `200 AUD`
+и exact user constraints сохраняются с USER_SUPPLIED / DEFERRED_NOT_MAPPED после
+restart. Protocol содержит только research_questions (и явно заданные дополнительные
+вопросы), constraints пуст. Новая migration не добавлялась; legacy v1 canonical bytes
+сохранены. Старый smoke выше относится к builder v1.

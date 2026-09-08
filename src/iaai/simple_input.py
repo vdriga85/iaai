@@ -47,26 +47,63 @@ class FieldOrigin(Snapshot):
     note: str = ""
 
 
+class FieldMapping(Snapshot):
+    field: str
+    status: Literal["MAPPED", "NOT_SUPPLIED", "DEFERRED_NOT_MAPPED"]
+
+
+def mapping_for(value):
+    return tuple(
+        FieldMapping(
+            field=name,
+            status=(
+                "NOT_SUPPLIED"
+                if not item
+                else "DEFERRED_NOT_MAPPED"
+                if name in ("budget", "user_constraints")
+                else "MAPPED"
+            ),
+        )
+        for name, item in value.clarifications.model_dump(mode="json").items()
+    )
+
+
 class ProtocolBuild(Snapshot):
     schema_version: Literal["0.1"] = "0.1"
-    builder_version: Literal["simple-explicit-v1"] = "simple-explicit-v1"
+    builder_version: Literal["simple-explicit-v1", "simple-explicit-v2"] = "simple-explicit-v2"
     input: SimpleIdeaInput
     input_hash: Hash
     protocol: ResearchProtocol
     protocol_hash: Hash
     origins: tuple[FieldOrigin, ...]
+    mapping: tuple[FieldMapping, ...] = ()
     neutralization: Literal["NOT_PERFORMED"] = "NOT_PERFORMED"
+
+    def canonical_json(self) -> str:
+        # Legacy audit artifacts predate mapping; never change their canonical bytes.
+        if self.builder_version == "simple-explicit-v1":
+            return json.dumps(
+                self.model_dump(mode="json", exclude={"mapping"}),
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+            )
+        return super().canonical_json()
 
     @model_validator(mode="after")
     def integrity(self) -> Self:
         protocol, origins = build_parts(self.input)
         if (
             self.input_hash != self.input.content_hash
-            or self.protocol != protocol
-            or self.protocol_hash != protocol.content_hash
-            or self.origins != origins
+            or self.protocol_hash != self.protocol.content_hash
         ):
             raise ValueError("Input/build/protocol mismatch")
+        if self.builder_version == "simple-explicit-v2" and (
+            self.protocol != protocol
+            or self.origins != origins
+            or self.mapping != mapping_for(self.input)
+        ):
+            raise ValueError("Input/build mapping mismatch")
         return self
 
 
@@ -89,9 +126,6 @@ def build_parts(value):
         name: supplied[name] or "UNKNOWN (NOT_SUPPLIED)"
         for name in ("neutral_description", "product_scope", "geography", "target_population")
     }
-    constraints = list(c.user_constraints)
-    if c.budget is not None:
-        constraints.insert(0, "Budget clarification (not parsed): " + c.budget)
     outputs = [
         {
             "name": "research_questions",
@@ -102,29 +136,8 @@ def build_parts(value):
         }
     ]
     outputs += [
-        {
-            "name": f"user_constraint_{i}",
-            "description": "USER_SUPPLIED boundary (unparsed), NOT evidence: " + text,
-            "value_type": "text",
-            "unit": "text",
-        }
-        for i, text in enumerate(constraints)
-    ]
-    outputs += [
         {"name": f"user_question_{i}", "description": text, "value_type": "text", "unit": "text"}
         for i, text in enumerate(c.additional_questions)
-    ]
-    # Text constraints preserve exact boundaries without guessing currency/operator/meaning.
-    constraint_defs = [
-        {
-            "output": f"user_constraint_{i}",
-            "type": "USER",
-            "operator": "eq",
-            "value": text,
-            "unit": "text",
-            "origin": "SimpleIdeaInput explicit boundary",
-        }
-        for i, text in enumerate(constraints)
     ]
     data.update(
         schema_version="0.1",
@@ -135,7 +148,7 @@ def build_parts(value):
         time_horizon=supplied["time_horizon"],
         source_cutoff=supplied["source_cutoff"],
         key_outputs=outputs,
-        constraints=constraint_defs,
+        constraints=[],
         assumptions=supplied["assumptions"],
         playbook_reference=None,
         playbook_version=None,
@@ -152,4 +165,5 @@ def build_protocol(value: SimpleIdeaInput) -> ProtocolBuild:
         protocol=protocol,
         protocol_hash=protocol.content_hash,
         origins=origins,
+        mapping=mapping_for(value),
     )

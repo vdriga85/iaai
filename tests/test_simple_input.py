@@ -7,8 +7,43 @@ from pydantic import ValidationError
 from iaai.bootstrap import build_service
 from iaai.proposal_context import assemble
 from iaai.proposal_domain import ProposalPolicy
-from iaai.simple_input import SimpleIdeaInput, build_protocol
+from iaai.simple_input import ProtocolBuild, SimpleIdeaInput, build_protocol
 from iaai.web import create_app
+
+
+def test_deferred_constraints_restart(service, tmp_path):
+    supplied = {"budget": "200 AUD", "user_constraints": ["  Must fit my desk  "]}
+    bundle = service.create_simple(json.dumps({"idea": "idea", "clarifications": supplied}))
+    rid = bundle.research.research_id
+    build = service.input_build(rid)
+    assert build.input.clarifications.budget == "200 AUD"
+    assert build.input.clarifications.user_constraints == ("  Must fit my desk  ",)
+    for name in supplied:
+        assert next(o.origin for o in build.origins if o.field == name) == "USER_SUPPLIED"
+        assert next(m.status for m in build.mapping if m.field == name) == "DEFERRED_NOT_MAPPED"
+    assert not build.protocol.constraints
+    assert [o.name for o in build.protocol.key_outputs] == ["research_questions"]
+    assert "200 AUD" not in build.protocol.canonical_json()
+    assert "user_constraint_" not in build.protocol.canonical_json()
+    restarted = build_service(service.store.path, tmp_path)
+    assert restarted.input_build(rid).canonical_json() == build.canonical_json()
+    page = create_app(restarted).test_client().get(f"/research/{rid}").get_data(as_text=True)
+    assert "DEFERRED_NOT_MAPPED" in page and "USER_SUPPLIED" in page
+    absent = build_protocol(SimpleIdeaInput(idea="idea"))
+    assert absent.input.clarifications.budget is None
+    assert next(m.status for m in absent.mapping if m.field == "budget") == "NOT_SUPPLIED"
+    assert next(o.origin for o in absent.origins if o.field == "budget") == "NOT_SUPPLIED"
+    assert absent.input_hash != build.input_hash
+    with pytest.raises(ValidationError):
+        ProtocolBuild.model_validate_json(build.model_copy(update={"mapping": ()}).canonical_json())
+
+
+def test_legacy_build_canonical_bytes():
+    data = build_protocol(SimpleIdeaInput(idea="legacy")).model_dump(mode="json")
+    data["builder_version"] = "simple-explicit-v1"
+    del data["mapping"]
+    raw = json.dumps(data, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    assert ProtocolBuild.model_validate_json(raw).canonical_json() == raw
 
 
 def test_one_line_creation_restart(service, tmp_path):
@@ -54,7 +89,10 @@ def test_supplied_scope_and_questions(service):
     assert origins["target_population"] == "NOT_SUPPLIED"
     assert bundle.protocol.time_horizon is None and bundle.protocol.source_cutoff is None
     assert bundle.protocol.assumptions == ("Explicit assumption",)
-    assert "200 AUD" in bundle.protocol.constraints[0].value
+    assert build.input.clarifications.budget == "200 AUD"
+    assert origins["budget"] == "USER_SUPPLIED"
+    assert not bundle.protocol.constraints
+    assert not any(o.name.startswith("user_constraint_") for o in bundle.protocol.key_outputs)
     assert any(o.description == "Repair cost?" for o in bundle.protocol.key_outputs)
 
 
