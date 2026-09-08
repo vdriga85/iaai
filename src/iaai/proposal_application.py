@@ -186,6 +186,7 @@ class ProposalService:
             counts[entry["review"].action if entry["review"] else "PENDING_REVIEW"] += 1
         return {
             "entries": entries,
+            "terminal_operations": self.store.terminal_without_candidates(research_id),
             "measurements": {
                 "generated": len(entries),
                 **counts,

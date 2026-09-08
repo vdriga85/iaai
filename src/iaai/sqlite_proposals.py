@@ -110,6 +110,22 @@ class SQLiteProposalStore:
                 raise IAAIError("NOT_FOUND", "Кандидат не найден.")
             return ProposalCandidate.model_validate_json(row[0])
 
+    def terminal_without_candidates(self, research_id):
+        with self.database.connection() as c:
+            rows = c.execute(
+                "SELECT r.content FROM proposal_results r "
+                "JOIN proposal_operations o ON o.id=r.operation_id "
+                "WHERE o.research_id=? AND NOT EXISTS "
+                "(SELECT 1 FROM proposal_candidates p WHERE p.operation_id=o.id) "
+                "ORDER BY r.rowid DESC",
+                (research_id,),
+            )
+            return [
+                {"operation_id": result.operation_id, "status": result.status}
+                for row in rows
+                for result in (ProposalResult.model_validate_json(row[0]),)
+            ]
+
     def review(self, decision):
         decision = ReviewDecision.model_validate_json(decision.canonical_json())
         with self.database.connection() as c, c:

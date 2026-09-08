@@ -4,7 +4,7 @@ import json
 
 from iaai.proposal_domain import ProposalOutput
 
-PROMPT_VERSION = "proposal-chatml-v2"
+PROMPT_VERSION = "proposal-chatml-v3"
 
 SYSTEM_CONTRACT = """SYSTEM CONTRACT
 You propose candidate claims and research questions, not evidence, facts or assessments.
@@ -62,7 +62,7 @@ def scope_view(protocol):
 
 
 def prompt_for(protocol, question, context, schema, max_candidates):
-    payload = safe_data([item.model_dump(mode="json") for item in context])
+    payload = safe_data(chunk_prompt_view(context))
     user = (
         "RESEARCH SCOPE (scope only, NOT EVIDENCE)\n"
         + safe_data(scope_view(protocol))
@@ -86,6 +86,11 @@ def prompt_for(protocol, question, context, schema, max_candidates):
         + user
         + "<|im_end|>\n<|im_start|>assistant\n"
     )
+
+
+def chunk_prompt_view(context):
+    """Minimal model data; full immutable ContextChunk stays in request/audit."""
+    return [{"chunk_id": item.chunk.chunk_id, "text": item.chunk.text} for item in context]
 
 
 def assemble(protocol, question, retrieved, policy):

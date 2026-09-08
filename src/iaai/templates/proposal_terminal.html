@@ -1,0 +1,12 @@
+<section class="notice" role="status">
+{% if terminal.status == 'MODEL_OUTPUT_INVALID' %}
+<h3>Результат модели отклонён валидатором</h3>
+<p>Модель вернула недопустимый формат или ссылки. Кандидаты не добавлены в очередь.</p>
+{% elif terminal.status == 'ABSTAINED' %}
+<h3>Модель воздержалась от предложений</h3><p>Генерация завершена без кандидатов.</p>
+{% else %}
+<h3>Генерация завершилась без кандидатов</h3><p>Предложения не получены. Причина доступна на странице операции.</p>
+{% endif %}
+<p>Статус: <code>{{ terminal.status }}</code></p>
+<a href="{{ url_for('proposal_show',operation_id=terminal.operation_id) }}">Открыть операцию</a>
+</section>

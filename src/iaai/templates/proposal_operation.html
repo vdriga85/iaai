@@ -1,5 +1,6 @@
 {% extends 'base.html' %}{% block title %}Предложения модели{% endblock %}{% block content %}
 {% set r=operation.request %}<h2>Предложения модели</h2>{% include 'proposal_notice.html' %}
+{% if operation.result and not operation.candidates %}{% set terminal={'operation_id': r.operation_id, 'status': operation.status} %}{% include 'proposal_terminal.html' %}{% endif %}
 <p>Операция {{ r.operation_id }} · {{ operation.status }}</p><h3>Исследовательский вопрос</h3><p>{{ r.question }}</p>
 <p>Research revision {{ r.research_revision }} · Корпус <a href="{{ url_for('corpus_snapshot',snapshot_id=r.snapshot_id) }}">{{ r.snapshot_id }}</a> · <code>{{ r.corpus_hash }}</code></p>
 <a href="{{ url_for('proposal_queue',research_id=r.research_id) }}">Очередь проверки</a>

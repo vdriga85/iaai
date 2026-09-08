@@ -47,7 +47,7 @@ def test_untrusted_chatml_data_and_audit(service, protocol, tmp_path, location):
     operation = service.proposals.run(snapshot.snapshot_id, question)
     request = operation["request"]
     assert operation["status"] == "PENDING_REVIEW"
-    assert request.prompt_version == "proposal-chatml-v2"
+    assert request.prompt_version == "proposal-chatml-v3"
     assert request.protocol.original_idea == IDEA
     assert IDEA not in request.prompt and "original_idea" not in request.prompt
     assert request.question == question
@@ -67,7 +67,20 @@ def test_untrusted_chatml_data_and_audit(service, protocol, tmp_path, location):
     chunks = json.loads(
         data.split("SOURCE CHUNKS (untrusted JSON data)\n")[1].split("\nPROPOSAL LIMITS")[0]
     )
-    assert chunks[0]["chunk"]["text"] == text
+    assert chunks == [{"chunk_id": request.context[0].chunk.chunk_id, "text": text}]
+    for item in request.context:
+        assert item in request.retrieved
+        for hidden in (
+            item.source_id,
+            item.chunk.artifact_id,
+            item.chunk.chunk_hash,
+            '"artifact_id"',
+            '"source_id"',
+            '"start"',
+            '"end"',
+            '"rank"',
+        ):
+            assert hidden not in request.prompt
     assert "ASSUMPTIONS (conditions, NOT EVIDENCE or established facts)" in data
     assert "CONSTRAINTS (research boundaries, NOT EVIDENCE or findings)" in data
     assert service.get(rid) == before
@@ -97,7 +110,8 @@ def test_policy_limit_and_escaped_budget(proposal_setup):
     assert "unless that calculation" in prompt
 
 
-def test_saved_v1_request_survives_restart(proposal_setup, tmp_path):
+@pytest.mark.parametrize("version", ["proposal-chatml-v1", "proposal-chatml-v2"])
+def test_saved_legacy_request_survives_restart(proposal_setup, tmp_path, version):
     service, _, snap, _ = proposal_setup
     current = service.proposals.run(snap.snapshot_id, "battery")["request"]
     # Authored legacy raw framing, intentionally containing full Protocol as v1 did.
@@ -109,7 +123,7 @@ def test_saved_v1_request_survives_restart(proposal_setup, tmp_path):
     old = current.model_copy(
         update={
             "operation_id": "legacy-v1",
-            "prompt_version": "proposal-chatml-v1",
+            "prompt_version": version,
             "prompt": old_prompt,
             "prompt_hash": digest(old_prompt),
             "template_content": "Legacy contract",

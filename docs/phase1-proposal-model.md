@@ -219,6 +219,35 @@ operation `73a43416-7099-49ef-8537-8e24ee2ead30`, 59.625 s, PENDING_REVIEW.
 Numeric prompt guard не устранил semantic hallucination. Кандидаты не приняты,
 repair/retry не выполнялись; оригиналы сохранены. Это quality observation, не benchmark.
 
+## Prompt v3 and terminal-result UI
+
+Новые операции используют `proposal-chatml-v3`. `chunk_prompt_view` передаёт модели
+только `chunk_id` и `text`, с прежним safe JSON escaping. Source/artifact IDs, hashes,
+offsets и rank остаются в полном immutable ContextChunk для audit, но не в проекции.
+Валидатор по-прежнему отклоняет любые IDs вне фактически переданных context chunks.
+Минимизация данных снижает путаницу, но не гарантирует отсутствие выдуманных IDs.
+v1/v2 читаются без перезаписи, SQLite schema остаётся 3.
+
+Страница операции и очередь явно показывают terminal results без кандидатов:
+MODEL_OUTPUT_INVALID — «Результат модели отклонён валидатором», статус и ссылка
+«Открыть операцию». Другие failures и abstention также видны. Очередь не выводит raw
+stdout; полный audit доступен в раскрываемом блоке операции. Незавершённые операции
+не объявляются terminal failures.
+
+Проверки v3: Ruff PASS, 181 tests PASS, wheel build/install и pip check PASS.
+Старая неуспешная операция проверена в браузере: сообщение валидатора видно.
+Все старые rows рабочей БД остались побайтно неизменными после controlled run/reopen;
+резервная копия сохранена локально, destructive/new migration не выполнялась.
+
+Controlled test повторён ровно один раз на snapshot
+`02be6d7f-61fc-436a-bd92-2e52a4ad261c` с прежним источником и вопросом
+«Сколько времени работал прототип при одном активном экране и при двух активных экранах?».
+Operation `58dd1a1f-e3c7-4d9d-8876-071dcaeffcf9`: 50.64 s, PENDING_REVIEW,
+один claim и один question, оба с единственным допустимым chunk ID.
+Модель сохранила 8 часов / 5 часов 30 минут, но ответила по-английски вопреки инструкции
+о языке вопроса. Claim содержит дополнительное слово portable. Это не acceptance
+качества; все кандидаты ожидают human review. Raw stdout сохранён без repair/retry.
+
 ## Pilot / validation / deferred
 
 Реальный CPU pilot: три собственных synthetic источника (battery, repair, unrelated),

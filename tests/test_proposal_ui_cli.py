@@ -1,7 +1,44 @@
 import json
 
+import pytest
+from test_proposals import FakeModel
+
 from iaai.cli import main
 from iaai.web import create_app
+
+
+@pytest.mark.parametrize("bad_id", ["art_forbidden", "chk_invented"])
+def test_invalid_reference_visible_in_operation_and_queue(proposal_setup, bad_id):
+    service, rid, snap, _ = proposal_setup
+
+    def invalid(value):
+        value["claims"][0]["chunk_ids"].append(bad_id)
+        return json.dumps(value)
+
+    service.proposals.model = FakeModel(invalid)
+    operation = service.proposals.run(snap.snapshot_id, "battery")
+    assert operation["status"] == "MODEL_OUTPUT_INVALID"
+    assert not operation["candidates"]
+    client = create_app(service).test_client()
+    link = f"/proposal/{operation['request'].operation_id}"
+    for url in (link, f"/research/{rid}/proposals"):
+        html = client.get(url).get_data(as_text=True)
+        assert "Результат модели отклонён валидатором" in html
+        assert "MODEL_OUTPUT_INVALID" in html and "Открыть операцию" in html
+        assert link in html
+    queue_html = client.get(f"/research/{rid}/proposals").get_data(as_text=True)
+    assert bad_id not in queue_html
+
+
+@pytest.mark.parametrize("status", ["MODEL_TIMEOUT", "NOT_CONFIGURED"])
+def test_other_terminal_failures_visible(proposal_setup, status):
+    service, rid, snap, _ = proposal_setup
+    service.proposals.model = FakeModel(status=status)
+    service.proposals.run(snap.snapshot_id, "battery")
+    html = (
+        create_app(service).test_client().get(f"/research/{rid}/proposals").get_data(as_text=True)
+    )
+    assert "Генерация завершилась без кандидатов" in html and status in html
 
 
 def test_ui_review_workflow(proposal_setup):
