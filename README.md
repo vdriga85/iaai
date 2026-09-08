@@ -1,5 +1,10 @@
 # IAAI
 
+Создание исследования одной фразой: `/research/new`. Уточнения необязательны;
+отсутствующий scope остаётся UNKNOWN, автоматический анализ не запускается.
+Полная прежняя форма: `/research/new/advanced`.
+Контракт и ограничения: [Simple idea input](docs/simple-idea-input.md).
+
 **Idea Audit + Artificial Intelligence**
 
 IAAI is at the **early architecture / prototype stage**. It is intended to become a local

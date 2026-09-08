@@ -9,7 +9,7 @@ from iaai.web import create_app
 
 
 def valid_form(client):
-    client.get("/research/new")
+    client.get("/research/new/advanced")
     with client.session_transaction() as session:
         token = session["csrf"]
     return {
@@ -36,7 +36,7 @@ def test_ui_shared_creation_and_read(service, monkeypatch):
     monkeypatch.setattr(service, "create", spy)
     client = create_app(service).test_client()
     assert client.get("/").status_code == 200
-    response = client.post("/research/new", data=valid_form(client))
+    response = client.post("/research/new/advanced", data=valid_form(client))
     assert response.status_code == 303
     assert len(calls) == 1
     details = client.get(response.location)
@@ -74,7 +74,7 @@ def test_ui_validation(service, field, value):
     client = create_app(service).test_client()
     form = valid_form(client)
     form[field] = value
-    response = client.post("/research/new", data=form)
+    response = client.post("/research/new/advanced", data=form)
     assert response.status_code == 400
     assert b"VALIDATION_ERROR" in response.data
     assert not service.list_researches()
@@ -83,16 +83,16 @@ def test_ui_validation(service, field, value):
 def test_local_security_and_escaping(service):
     client = create_app(service).test_client()
     assert client.get("/", headers={"Host": "evil.example"}).status_code == 400
-    assert client.post("/research/new", data={}).status_code == 400
+    assert client.post("/research/new/advanced", data={}).status_code == 400
     form = valid_form(client)
     assert (
         client.post(
-            "/research/new", data=form, headers={"Origin": "https://evil.example"}
+            "/research/new/advanced", data=form, headers={"Origin": "https://evil.example"}
         ).status_code
         == 403
     )
     form["original_idea"] = "<script>alert(1)</script>"
-    response = client.post("/research/new", data=form, follow_redirects=True)
+    response = client.post("/research/new/advanced", data=form, follow_redirects=True)
     assert b"<script>alert(1)</script>" not in response.data
     assert b"&lt;script&gt;" in response.data
     assert "frame-ancestors 'none'" in response.headers["Content-Security-Policy"]

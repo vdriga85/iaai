@@ -18,6 +18,8 @@ from iaai.domain import (
 )
 from iaai.errors import IAAIError
 from iaai.proposal_migration import MIGRATION_3
+from iaai.simple_input import ProtocolBuild
+from iaai.simple_input_migration import MIGRATION_4
 
 APPLICATION_ID = 0x49414149
 MIGRATIONS = (
@@ -42,6 +44,7 @@ MIGRATIONS = (
     ),
     MIGRATION_2,
     MIGRATION_3,
+    MIGRATION_4,
 )
 
 
@@ -139,9 +142,13 @@ class SQLiteResearchStore:
         finally:
             expected.close()
 
-    def save(self, bundle: RevisionBundle, expected_revision: int) -> None:
+    def save(self, bundle: RevisionBundle, expected_revision: int, input_build=None) -> None:
         # Revalidate even if a caller used Pydantic's unsafe model_copy/model_construct APIs.
         bundle = RevisionBundle.model_validate_json(bundle.canonical_json())
+        if input_build is not None:
+            input_build = ProtocolBuild.model_validate_json(input_build.canonical_json())
+            if input_build.protocol != bundle.protocol or expected_revision != 0:
+                raise ValueError("Input build must match initial protocol")
         research, revision = bundle.research, bundle.revision
         if (
             research.current_revision != expected_revision + 1
@@ -195,6 +202,30 @@ class SQLiteResearchStore:
                     bundle.manifest.canonical_json(),
                 ),
             )
+
+            if input_build is not None:
+                connection.execute(
+                    "INSERT INTO input_builds VALUES (?,?,?,?)",
+                    (
+                        research.research_id,
+                        revision.revision,
+                        input_build.content_hash,
+                        input_build.canonical_json(),
+                    ),
+                )
+
+    def input_build(self, research_id, revision=1):
+        with self.connection() as c:
+            row = c.execute(
+                "SELECT hash,content FROM input_builds WHERE research_id=? AND revision=?",
+                (research_id, revision),
+            ).fetchone()
+            if row is None:
+                return None
+            build = ProtocolBuild.model_validate_json(row[1])
+            if build.content_hash != row[0]:
+                raise ValueError("Input build hash mismatch")
+            return build
 
     def list_researches(self) -> tuple[Research, ...]:
         with self.connection() as connection:

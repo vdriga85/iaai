@@ -45,7 +45,7 @@ def test_atomic_create_restart_and_manifest(service, protocol, tmp_path):
         db["foreign_keys"],
         db["busy_timeout"],
         db["user_version"],
-    ) == ("wal", 2, 1, 5000, 3)
+    ) == ("wal", 2, 1, 5000, 4)
     assert bundle.manifest.runtime.python_version
     assert bundle.manifest.runtime.git_status == "UNAVAILABLE"
 

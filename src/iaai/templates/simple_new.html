@@ -1,0 +1,17 @@
+{% extends 'base.html' %}{% block title %}Новое исследование{% endblock %}{% block content %}
+<h2>Что хотите исследовать?</h2>
+{% if error %}<div class="error" role="alert">{% for message in error.messages %}<p>{{ message }}</p>{% endfor %}</div>{% endif %}
+<form method="post">
+<input type="hidden" name="csrf" value="{{ session.csrf }}">
+<label for="idea">Идея одной фразой</label>
+<textarea id="idea" name="idea" required maxlength="20000">{{ form.get('idea','') }}</textarea>
+<button>Исследовать</button>
+<p>Создаётся исследование. Автоматический сбор источников и анализ не запускаются.</p>
+<details><summary>Уточнить исследование</summary>
+<p>Все поля необязательны. Отсутствующие сведения остаются UNKNOWN / NOT_SUPPLIED. Исходная фраза сохраняется дословно; автоматическая смысловая нейтрализация пока не выполняется.</p>
+{% for name,label in [('neutral_description','Нейтральное описание'),('product_scope','Конфигурация продукта'),('geography','География'),('target_population','Целевая аудитория'),('budget','Бюджет — явное ограничение'),('time_horizon','Горизонт исследования'),('source_cutoff','Дата отсечения источников, YYYY-MM-DD'),('languages','Языки источников, через запятую'),('additional_questions','Дополнительные вопросы, по одному на строку'),('assumptions','Явные предположения, по одному на строку'),('user_constraints','Другие ограничения, по одному на строку')] %}
+<label for="{{ name }}">{{ label }}</label><textarea id="{{ name }}" name="{{ name }}">{{ form.get(name,'') }}</textarea>
+{% endfor %}</details>
+</form>
+<p><a href="{{ url_for('advanced_research') }}">Расширенное создание — полный Protocol</a></p>
+{% endblock %}

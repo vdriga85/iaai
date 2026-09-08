@@ -174,6 +174,46 @@ def create_app(service: ResearchService) -> Flask:
         error = None
         if request.method == "POST":
             try:
+                clarifications = {
+                    name: request.form.get(name, "")
+                    for name in (
+                        "neutral_description",
+                        "product_scope",
+                        "geography",
+                        "target_population",
+                        "budget",
+                        "time_horizon",
+                        "source_cutoff",
+                    )
+                }
+                for name in (
+                    "languages",
+                    "additional_questions",
+                    "assumptions",
+                    "user_constraints",
+                ):
+                    text = request.form.get(name, "")
+                    lines = text.split(",") if name == "languages" else text.splitlines()
+                    clarifications[name] = [line for line in lines if line.strip()]
+                bundle = service.create_simple(
+                    json.dumps(
+                        {"idea": request.form.get("idea", ""), "clarifications": clarifications}
+                    )
+                )
+                return redirect(
+                    url_for("details", research_id=bundle.research.research_id), code=303
+                )
+            except IAAIError as exc:
+                error = display_error(exc)
+        return render_template(
+            "simple_new.html", form=request.form, error=error
+        ), 400 if error else 200
+
+    @app.route("/research/new/advanced", methods=["GET", "POST"])
+    def advanced_research():
+        error = None
+        if request.method == "POST":
+            try:
                 bundle = service.create(
                     form_protocol(request.form), request.form.get("policy", "").strip() or None
                 )
@@ -196,7 +236,12 @@ def create_app(service: ResearchService) -> Flask:
                 "VALIDATION_ERROR", "Версия исследования: укажите целое число от 1."
             ) from exc
         bundle = service.get(research_id, revision)
-        return render_template("details.html", bundle=bundle, has_corpus=service.corpus is not None)
+        return render_template(
+            "details.html",
+            bundle=bundle,
+            has_corpus=service.corpus is not None,
+            input_build=service.input_build(research_id, bundle.revision.revision),
+        )
 
     @app.get("/diagnostics")
     def diagnostics():

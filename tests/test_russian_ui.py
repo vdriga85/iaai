@@ -34,12 +34,12 @@ class FormStructure(HTMLParser):
 
 def test_russian_navigation_form_and_cutoff(service):
     client = create_app(service).test_client()
-    for page in ("/", "/research/new", "/diagnostics"):
+    for page in ("/", "/research/new/advanced", "/diagnostics"):
         html = client.get(page).get_data(as_text=True)
         assert '<html lang="ru">' in html
         for label in ("Исследования", "Новое исследование", "Диагностика"):
             assert label in html
-    html = client.get("/research/new").get_data(as_text=True)
+    html = client.get("/research/new/advanced").get_data(as_text=True)
     for label in (
         "Исходная идея",
         "Что именно мы исследуем",
@@ -82,7 +82,7 @@ def test_plain_russian_outputs_exact_text_and_stable_ids(service):
     del form["constraints"]  # Browser/user does not need to supply developer settings.
     first = json.loads(form_protocol(form))["key_outputs"]
     assert first == json.loads(form_protocol(form))["key_outputs"]
-    response = client.post("/research/new", data=form)
+    response = client.post("/research/new/advanced", data=form)
     assert response.status_code == 303
     bundle = service.get(service.list_researches()[0].research_id)
     assert [o.description for o in bundle.protocol.key_outputs] == descriptions
@@ -109,7 +109,7 @@ def test_advanced_outputs_and_constraints(service):
             }
         ]
     )
-    response = client.post("/research/new", data=form, follow_redirects=True)
+    response = client.post("/research/new/advanced", data=form, follow_redirects=True)
     assert response.status_code == 200
     bundle = service.get(service.list_researches()[0].research_id)
     assert bundle.protocol.key_outputs[0].name == "prototype_cost"
@@ -122,7 +122,7 @@ def test_generated_ids_do_not_collide(service):
     client = create_app(service).test_client()
     form = valid_form(client)
     form["advanced_key_outputs"] = "output_1|number|hours|Время работы"
-    response = client.post("/research/new", data=form)
+    response = client.post("/research/new/advanced", data=form)
     assert response.status_code == 303
     outputs = service.get(service.list_researches()[0].research_id).protocol.key_outputs
     assert [o.name for o in outputs] == ["output_2", "output_3", "output_1"]
@@ -142,7 +142,7 @@ def test_russian_validation_preserves_input(service, field, value, label):
     client = create_app(service).test_client()
     form = valid_form(client)
     form[field] = value
-    response = client.post("/research/new", data=form)
+    response = client.post("/research/new/advanced", data=form)
     assert response.status_code == 400
     html = response.get_data(as_text=True)
     alert = html.split('<div class="error" role="alert">')[1]
@@ -204,7 +204,7 @@ def test_localized_diagnostics_failure_and_security(service, tmp_path):
     assert broken.status_code == 503
     assert "База данных: Ошибка" in broken.get_data(as_text=True)
     assert "баз" in broken.get_data(as_text=True)
-    assert "Действие не выполнено" in client.post("/research/new").get_data(as_text=True)
+    assert "Действие не выполнено" in client.post("/research/new/advanced").get_data(as_text=True)
     assert client.get("/", headers={"Host": "evil.example"}).status_code == 400
 
 

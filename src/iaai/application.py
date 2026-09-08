@@ -18,6 +18,7 @@ from iaai.domain import (
 )
 from iaai.errors import IAAIError
 from iaai.ports import ResearchStore
+from iaai.simple_input import SimpleIdeaInput, build_protocol
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +75,23 @@ class ResearchService:
         )
         return self._save(research, protocol, policy, 0)
 
+    def create_simple(self, input_json: str) -> RevisionBundle:
+        try:
+            build = build_protocol(SimpleIdeaInput.model_validate_json(input_json))
+        except ValidationError as exc:
+            raise validation_error(exc) from exc
+        research = Research(
+            research_id=str(uuid4()),
+            original_idea=build.input.idea,
+            status="CREATED",
+            current_revision=1,
+            created_at=datetime.now(UTC),
+        )
+        return self._save(research, build.protocol, self.default_policy, 0, build)
+
+    def input_build(self, research_id, revision=1):
+        return self.store.input_build(research_id, revision)
+
     def revise(self, research_id: str, protocol_json: str, policy_json: str) -> RevisionBundle:
         protocol, policy = parse_protocol(protocol_json), parse_policy(policy_json)
         previous = self.store.load(research_id)
@@ -111,6 +129,7 @@ class ResearchService:
         protocol: ResearchProtocol,
         policy: ResearchPolicy,
         expected_revision: int,
+        input_build=None,
     ) -> RevisionBundle:
         now, run_id = datetime.now(UTC), str(uuid4())
         revision = ResearchRevision(
@@ -131,7 +150,10 @@ class ResearchService:
             policy=policy,
             manifest=manifest,
         )
-        self.store.save(bundle, expected_revision)
+        if input_build is None:
+            self.store.save(bundle, expected_revision)
+        else:
+            self.store.save(bundle, expected_revision, input_build=input_build)
         logger.info(
             "revision_saved operation_id=%s run_id=%s revision=%d",
             run_id,
