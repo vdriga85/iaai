@@ -1,5 +1,6 @@
 """Composition root: concrete adapter selection and packaged defaults."""
 
+import os
 from importlib.resources import files
 from pathlib import Path
 
@@ -9,7 +10,11 @@ from iaai.corpus_domain import CorpusPolicy
 from iaai.environment import capture_runtime, system_diagnostics
 from iaai.fts_retrieval import FTS5Retriever
 from iaai.http_acquisition import PublicHTTPAcquisition
+from iaai.local_proposal_model import LocalProposalModel
+from iaai.proposal_application import ProposalService
+from iaai.proposal_domain import ProposalPolicy
 from iaai.sqlite_corpus import SQLiteCorpusStore
+from iaai.sqlite_proposals import SQLiteProposalStore
 from iaai.sqlite_store import SQLiteResearchStore
 from iaai.text_extraction import chunk_text, extract_html, normalize_text
 
@@ -32,10 +37,20 @@ def build_service(database: Path | None = None, repository: Path | None = None) 
         chunk_text,
         normalize_text,
     )
-    return ResearchService(
+    service = ResearchService(
         store,
         policy,
         lambda: capture_runtime(repository),
         lambda: system_diagnostics(database, repository),
         corpus,
     )
+    service.proposals = ProposalService(
+        store,
+        corpus,
+        SQLiteProposalStore(store),
+        LocalProposalModel(
+            os.environ.get("IAAI_MODEL_CONFIG", str(repository / "runtime/model-config.json"))
+        ),
+        ProposalPolicy(),
+    )
+    return service

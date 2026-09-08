@@ -11,6 +11,7 @@ from werkzeug.exceptions import HTTPException, SecurityError
 from iaai.application import ResearchService
 from iaai.corpus_web import register_corpus_routes
 from iaai.errors import IAAIError
+from iaai.proposal_web import register_proposal_routes
 from iaai.web_display import (
     CONSTRAINT_TYPES,
     FIELD_LABELS,
@@ -108,6 +109,8 @@ def create_app(service: ResearchService) -> Flask:
     )
     if service.corpus is not None:
         register_corpus_routes(app, service.corpus)
+    if service.proposals is not None:
+        register_proposal_routes(app, service.proposals)
 
     @app.before_request
     def protect_local_write():

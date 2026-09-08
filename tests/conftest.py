@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 import pytest
+from test_proposals import proposal_setup  # noqa: F401
 
 from iaai.bootstrap import build_service
 

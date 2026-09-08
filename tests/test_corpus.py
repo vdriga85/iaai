@@ -64,7 +64,7 @@ def test_v1_migration_preserves_exact_json(service, protocol, tmp_path):
     before = exact_rows()
     migrated = build_service(path, tmp_path)
     assert migrated.get(old.research.research_id) == old
-    assert migrated.doctor()["database"]["user_version"] == 2
+    assert migrated.doctor()["database"]["user_version"] == 3
     assert exact_rows() == before
     assert migrated.get_manifest(old.manifest.run_id).content_hash == old.manifest.content_hash
 

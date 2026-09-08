@@ -14,8 +14,10 @@ paid APIs, hosted services, or cloud infrastructure.
 Phase 1 / Step 1 is executable: create and inspect research sessions through a local browser
 UI or CLI, with immutable protocol/policy snapshots, revision history and runtime manifests
 persisted in SQLite. Step 2 adds public HTML/manual acquisition, exact chunks and frozen corpus
-BM25 search. **No research analysis is performed.** Models, evidence assessment, reports
-and recursion remain unimplemented.
+BM25 search. **No research analysis is performed.** Evidence assessment, reports
+and recursion remain unimplemented. Step 3 adds one optional local GGUF proposal model
+and a human reviewer queue; candidates are not facts or evidence. See the
+[local proposal guide](docs/phase1-proposal-model.md) for setup and limitations.
 
 Architecture v0.1 is **ACCEPTED FOR EXPERIMENTAL IMPLEMENTATION**. This does not validate
 the methodology: Phase 1 is a human-assisted experiment, calibration defaults remain

@@ -155,6 +155,8 @@ def display_error(error: IAAIError) -> dict:
         "CHUNK_VERSION_MISMATCH",
         "RAW_CACHE_LIMIT",
         "CORPUS_CONFLICT",
+        "REVIEW_CONFLICT",
+        "PROPOSAL_INPUT_MISMATCH",
     }:
         messages = [error.message]  # Form adapter messages are already Russian.
     elif error.code == "NOT_FOUND":

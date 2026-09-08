@@ -1,0 +1,18 @@
+{% for entry in entries %}{% set c=entry.candidate %}{% set d=entry.review %}
+<article><h3>{{ 'Кандидат утверждения' if c.kind == 'CLAIM' else 'Кандидат вопроса' }}</h3>
+<p>Исходный текст модели:</p><pre>{{ c.text }}</pre>{% if c.reason %}<p>Предложенная причина / пробел: {{ c.reason }}</p>{% endif %}
+<p>Вопрос: {{ c.question }}</p><p>Ссылки модели (не доказательство): {{ c.chunk_ids|join(', ') }}</p>
+<a href="{{ url_for('proposal_show',operation_id=c.operation_id) }}">Операция и точный контекст</a>
+{% if d %}<p>{{ d.action }} · HUMAN_REVIEWED · {{ d.reviewer }} · {{ d.reviewed_at }}</p>
+{% if d.edited_text %}<p>Отредактированный текст человека:</p><pre>{{ d.edited_text }}</pre>{% endif %}
+<p>{{ d.reason_code or '' }} {{ d.comment }} · Изменённые символы: {{ d.changed_characters }}</p>
+{% else %}<p>Ожидает проверки — PENDING_REVIEW</p>
+<form method="post" action="{{ url_for('proposal_review',candidate_id=c.candidate_id) }}"><input type="hidden" name="csrf" value="{{ session.csrf }}">
+<label>Проверяющий <input name="reviewer" value="local-user" required></label>
+<label>Комментарий <input name="comment" maxlength="2000"></label>
+<label>Причина <select name="reason_code"><option value="">Не указана</option>{% for code in ['NOT_GROUNDED','DUPLICATE','IRRELEVANT','TOO_VAGUE','WRONG_SCOPE','BAD_FORMULATION','OTHER'] %}<option>{{ code }}</option>{% endfor %}</select></label>
+<button name="action" value="ACCEPTED">Принять</button><button name="action" value="REJECTED">Отклонить</button></form>
+<details><summary>Редактировать и принять</summary><form method="post" action="{{ url_for('proposal_review',candidate_id=c.candidate_id) }}"><input type="hidden" name="csrf" value="{{ session.csrf }}"><input type="hidden" name="action" value="EDITED_ACCEPTED">
+<label>Проверяющий <input name="reviewer" value="local-user" required></label><label>Текст человека <textarea name="edited_text" maxlength="2000" required>{{ c.text }}</textarea></label>
+<label>Комментарий <input name="comment" maxlength="2000"></label><button>Сохранить правку и принять</button></form></details>
+{% endif %}</article>{% else %}<p>Кандидатов нет. Это не означает принятия или успешного анализа.</p>{% endfor %}

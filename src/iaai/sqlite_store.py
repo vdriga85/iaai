@@ -17,6 +17,7 @@ from iaai.domain import (
     RunManifest,
 )
 from iaai.errors import IAAIError
+from iaai.proposal_migration import MIGRATION_3
 
 APPLICATION_ID = 0x49414149
 MIGRATIONS = (
@@ -40,6 +41,7 @@ MIGRATIONS = (
         ),
     ),
     MIGRATION_2,
+    MIGRATION_3,
 )
 
 
