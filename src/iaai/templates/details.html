@@ -3,6 +3,12 @@
 {% block content %}
 {% set r = bundle.research %}{% set p = bundle.protocol %}{% set v = bundle.revision %}{% set m = bundle.manifest %}
 <h2>Исследование</h2>
+{% if input_build %}
+<section><h2>Вход одной фразой — происхождение настроек</h2>
+<p>Нейтрализация идеи: NOT_PERFORMED. Неуказанный scope — UNKNOWN, не предположение и не evidence. Системные направления исследования — не заявления пользователя.</p>
+<ul>{% for item in input_build.origins %}<li>{{ item.field }}: {{ item.origin }}{% if item.note %} — {{ item.note }}{% endif %}</li>{% endfor %}</ul>
+<details><summary>Аудит input / builder / exact Protocol</summary><p>Build hash: {{ input_build.content_hash }}</p><pre>{{ input_build.model_dump(mode='json')|tojson(indent=2) }}</pre></details>
+</section>{% endif %}
 {% if has_corpus %}<section><h2>Источники</h2><p>Добавьте публичную HTML-страницу или текст вручную, выберите материалы и зафиксируйте корпус для поиска.</p><a class="button" href="{{ url_for('sources', research_id=r.research_id) }}">Источники и корпус</a></section>{% endif %}
 <section><p><strong>Создано — анализ не запускался.</strong> Настройки сохранены, но ответов на вопросы пока нет.</p>
 <dl><dt>Создано (UTC)</dt><dd>{{ r.created_at.strftime('%d.%m.%Y %H:%M') }}</dd><dt>Текущая версия исследования</dt><dd>{{ r.current_revision }}</dd></dl></section>
